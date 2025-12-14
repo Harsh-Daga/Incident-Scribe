@@ -138,6 +138,25 @@ npm run dev
 
 Open http://localhost:3000 and login!
 
+## 🧪 Demo Credentials
+
+Use these pre-configured accounts to explore the platform:
+
+### Demo Company (Organization User)
+
+| Role | Email | Password |
+|------|-------|----------|
+| **Admin** | `admin@democompany.com` | `Admin123!` |
+| **Member** | `member@democompany.com` | `Member123!` |
+| **Viewer** | `viewer@democompany.com` | `Viewer123!` |
+
+### What to Try
+
+1. **Login as Demo Admin** → View all incidents, trigger AI analysis, manage team
+2. **Login as Demo Viewer** → Read-only access to incidents
+4. **Test Webhook** → Send an incident via the webhook endpoint
+5. **Run AI Analysis** → Click "Run AI Analysis" on any incident
+
 ## 🏗️ Architecture
 
 ```
