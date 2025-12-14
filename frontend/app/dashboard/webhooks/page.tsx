@@ -7,8 +7,6 @@ import {
   Webhook,
   Copy,
   Check,
-  ExternalLink,
-  Terminal,
   ChevronDown,
   ChevronRight,
   Send,

@@ -259,7 +259,6 @@ Set up alerts in:
 - [ ] Review Supabase RLS policies
 - [ ] Enable Vercel password protection (optional)
 - [ ] Use HTTPS for Kestra (ngrok provides this)
-- [ ] Restrict Kestra access to Vercel IPs only
 
 ## Troubleshooting
 

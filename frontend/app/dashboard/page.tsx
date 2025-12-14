@@ -20,7 +20,6 @@ import {
   Server,
   Waves,
   ChevronRight,
-  ExternalLink,
   Settings,
   Users,
   BookOpen,

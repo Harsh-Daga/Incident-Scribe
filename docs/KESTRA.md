@@ -214,7 +214,7 @@ Persists AI results to `ai_analyses` table.
 ```bash
 # Get execution status
 curl http://localhost:8080/api/v1/main/executions/{execution_id} \
-  -u admin@kestra.io:kestra
+  -u username:password
 ```
 
 ## Customization

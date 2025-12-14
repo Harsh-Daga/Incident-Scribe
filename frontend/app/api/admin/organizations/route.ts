@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase-admin';
 import { generateInviteCode, generateWebhookKey, generateSlug } from '@/lib/organizations';
+import { randomBytes } from 'crypto';
 
 export async function GET() {
   try {
@@ -104,7 +105,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Create admin auth user
-    const tempPassword = `Admin${Math.random().toString(36).substring(2, 10)}!`;
+    const tempPassword = `Admin${randomBytes(6).toString('base64url')}!`;
     
     const { data: adminAuth, error: adminAuthError } = await adminClient.auth.admin.createUser({
       email: adminEmail,

@@ -112,7 +112,10 @@ export async function middleware(request: NextRequest) {
 
       if (error) {
         console.error('Middleware: Error fetching user for org check:', error.message)
-        // Allow access, let the page handle permissions
+        // Fail closed: redirect on DB error for security
+        const url = request.nextUrl.clone()
+        url.pathname = '/dashboard'
+        return NextResponse.redirect(url)
       } else if (userData?.role !== 'admin') {
         const url = request.nextUrl.clone()
         url.pathname = '/dashboard'

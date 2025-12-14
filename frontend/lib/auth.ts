@@ -77,6 +77,8 @@ export async function authenticateByEmail(email: string): Promise<Session | null
 
 /**
  * Create session cookie
+ * WARNING: This demo implementation stores session as plain JSON.
+ * In production, use Supabase Auth or sign/encrypt the session data.
  */
 export async function createSession(session: Session) {
   const cookieStore = await cookies();

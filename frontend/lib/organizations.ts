@@ -86,35 +86,15 @@ export async function validateInviteCode(code: string): Promise<{
 }
 
 /**
- * Use invite code - increment usage count
+ * Use invite code - atomically increment usage count to prevent race conditions
  */
 export async function useInviteCode(code: string): Promise<boolean> {
   const supabase = createAdminClient();
   
-  // Get current invite code state
-  const { data: inviteCode, error: fetchError } = await supabase
-    .from('invite_codes')
-    .select('id, uses_count, max_uses')
-    .eq('code', code)
-    .single();
+  // Use RPC for atomic increment to prevent race conditions
+  const { error } = await supabase.rpc('use_invite_code', { invite_code: code });
 
-  if (fetchError || !inviteCode) {
-    return false;
-  }
-
-  // Increment uses count and deactivate if max reached
-  const newUsesCount = inviteCode.uses_count + 1;
-  const shouldDeactivate = inviteCode.max_uses !== null && newUsesCount >= inviteCode.max_uses;
-
-  const { error: updateError } = await supabase
-    .from('invite_codes')
-    .update({
-      uses_count: newUsesCount,
-      active: !shouldDeactivate
-    })
-    .eq('id', inviteCode.id);
-
-  return !updateError;
+  return !error;
 }
 
 /**

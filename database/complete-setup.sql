@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS ai_analyses (
 CREATE TABLE IF NOT EXISTS invite_codes (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
-  code VARCHAR(32) UNIQUE NOT NULL,
+  code VARCHAR(64) UNIQUE NOT NULL,
   role VARCHAR(50) DEFAULT 'member' CHECK (role IN ('admin', 'member', 'viewer')),
   created_by UUID REFERENCES users(id) ON DELETE SET NULL,
   expires_at TIMESTAMP WITH TIME ZONE,
@@ -199,6 +199,50 @@ GRANT EXECUTE ON FUNCTION public.get_user_organization_id() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.get_user_organization_id() TO anon;
 GRANT EXECUTE ON FUNCTION public.get_user_role() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.get_user_role() TO anon;
+
+-- Atomic invite code usage function (prevents race conditions)
+CREATE OR REPLACE FUNCTION public.use_invite_code(invite_code TEXT)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_invite_id UUID;
+  v_max_uses INTEGER;
+  v_current_uses INTEGER;
+BEGIN
+  -- Lock the row and get current state
+  SELECT id, max_uses, current_uses INTO v_invite_id, v_max_uses, v_current_uses
+  FROM invite_codes
+  WHERE code = invite_code AND active = true
+  FOR UPDATE;
+
+  IF v_invite_id IS NULL THEN
+    RETURN false;
+  END IF;
+
+  -- Check if max uses would be exceeded
+  IF v_max_uses IS NOT NULL AND v_current_uses >= v_max_uses THEN
+    RETURN false;
+  END IF;
+
+  -- Atomically increment and potentially deactivate
+  UPDATE invite_codes
+  SET 
+    current_uses = current_uses + 1,
+    active = CASE 
+      WHEN max_uses IS NOT NULL AND current_uses + 1 >= max_uses THEN false 
+      ELSE active 
+    END
+  WHERE id = v_invite_id;
+
+  RETURN true;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.use_invite_code(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.use_invite_code(TEXT) TO anon;
 
 -- ============================================================================
 -- PART 5: ROW LEVEL SECURITY (RLS)
