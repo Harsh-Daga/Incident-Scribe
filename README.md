@@ -1,29 +1,42 @@
-<div align="center">
-
 # 🚨 IncidentScribe AI
 
-## AI-Powered Incident Management with Autonomous Multi-Agent Analysis
+**AI-Powered Incident Management with Autonomous Multi-Agent Analysis**
 
-[![Next.js](https://img.shields.io/badge/Next.js-16.0-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
-[![Kestra](https://img.shields.io/badge/Kestra-Latest-8B5CF6?style=for-the-badge&logo=kestra)](https://kestra.io/)
-[![Supabase](https://img.shields.io/badge/Supabase-Latest-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+Transform incident management from reactive firefighting to proactive, AI-assisted resolution with real-time streaming analysis, automated remediation, and intelligent documentation.
 
-**Transform incident management from reactive firefighting to proactive, AI-assisted resolution**
+[![Next.js](https://img.shields.io/badge/Next.js-16.0-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.2-61DAFB?style=flat-square&logo=react)](https://react.dev/)
+[![Kestra](https://img.shields.io/badge/Kestra-Latest-8B5CF6?style=flat-square)](https://kestra.io/)
+[![Supabase](https://img.shields.io/badge/Supabase-Latest-3ECF8E?style=flat-square&logo=supabase)](https://supabase.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
 
-[Features](#-features) • [Quick Start](#-quick-start) • [Architecture](#-architecture) • [Documentation](#-documentation) • [Contributing](#-contributing)
+[Features](#features) • [Quick Start](#quick-start) • [Architecture](#architecture) • [API](#api-reference) • [Documentation](#documentation)
 
 ---
 
-</div>
+## 📖 Table of Contents
 
-## 📖 Overview
+- [Overview](#overview)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Quick Start](#quick-start)
+- [Demo](#demo)
+- [Tech Stack](#tech-stack)
+- [API Reference](#api-reference)
+- [CLI Usage](#cli-usage)
+- [Security](#security)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
+- [License](#license)
 
-IncidentScribe AI is a production-ready, enterprise-grade incident management platform that leverages multi-agent AI orchestration to automatically analyze, remediate, and document production incidents. Built with modern technologies and security-first principles, it provides real-time insights powered by Google Gemini AI, orchestrated through Kestra workflows, with enterprise authentication and multi-tenancy via Supabase.
+---
 
-### 🎯 The Problem
+## 🎯 Overview
+
+**IncidentScribe AI** is a production-ready, enterprise-grade incident management platform that leverages multi-agent AI orchestration to automatically analyze, remediate, and document production incidents.
+
+### The Problem
 
 Traditional incident management is:
 - ⏰ **Reactive** - Teams scramble to diagnose issues during outages
@@ -31,23 +44,20 @@ Traditional incident management is:
 - 📝 **Undocumented** - Knowledge is lost after incidents are resolved
 - 🔄 **Repetitive** - Same issues recur without proper root cause analysis
 
-### ✨ The Solution
+### The Solution
 
 IncidentScribe AI provides:
-- 🤖 **Autonomous Analysis** - AI agents automatically diagnose issues
-- ⚡ **Real-Time Insights** - Streaming analysis as incidents occur
+- 🤖 **Autonomous Analysis** - AI agents automatically diagnose root causes
+- ⚡ **Real-Time Insights** - Streaming analysis powered by Google Gemini
 - 📋 **Automatic Documentation** - Post-mortems generated instantly
 - 🧠 **Learning System** - Historical context for pattern recognition
 - 🔐 **Enterprise Security** - Multi-tenant with row-level security
 
 ---
 
-## 🚀 Features
+## ✨ Features
 
 ### 🔐 Enterprise Authentication & Multi-Tenancy
-
-<details>
-<summary><b>Click to expand</b></summary>
 
 - **Supabase Auth Integration**
   - JWT-based authentication with httpOnly cookies
@@ -58,30 +68,23 @@ IncidentScribe AI provides:
 - **Organization Isolation**
   - Database-enforced data isolation via Row Level Security (RLS)
   - Users automatically scoped to their organization
-  - No cross-organization data leakage possible
+  - No cross-organization data leakage
   - Webhook authentication per organization
 
 - **Role-Based Access Control (RBAC)**
-
-```text
+  ```
   Platform Admin → Full system access, create organizations
   Org Admin      → Manage users, view webhook keys, generate invite codes
   Member         → Full incident management and analysis
   Viewer         → Read-only access to incidents
-
-```
+  ```
 
 - **Invite Code System**
   - Secure user onboarding with time-limited codes
   - Pre-defined role assignment
   - Track code usage and expiration
 
-</details>
-
 ### 🤖 AI-Powered Multi-Agent Analysis
-
-<details>
-<summary><b>Click to expand</b></summary>
 
 - **Google Gemini 2.5 Flash Integration**
   - Fast, accurate incident analysis
@@ -96,14 +99,12 @@ IncidentScribe AI provides:
   - Structured JSON output
 
 - **Multi-Agent Kestra Workflow**
-
-```text
+  ```
   Analyzer Agent     → Diagnoses root cause from logs/metrics
   Remediation Agent  → Generates safe, actionable fix commands
   Documentation Agent → Creates comprehensive post-mortems
   Correlation Agent  → Finds related historical incidents
-
-```
+  ```
 
 - **Persistent Knowledge Base**
   - All analyses saved to database
@@ -111,12 +112,7 @@ IncidentScribe AI provides:
   - Pattern recognition over time
   - Continuous learning from past incidents
 
-</details>
-
 ### 🔄 Intelligent Workflow Orchestration
-
-<details>
-<summary><b>Click to expand</b></summary>
 
 - **Kestra-Powered Automation**
   - Webhook triggers for automatic analysis
@@ -125,14 +121,12 @@ IncidentScribe AI provides:
   - Parallel execution of analysis tasks
 
 - **Decision Engine**
-
-```text
+  ```
   LOW severity      → Auto-fix suggestions, optional approval
   MEDIUM severity   → Manual review required before remediation
   HIGH severity     → Immediate escalation + AI analysis
   CRITICAL severity → All hands on deck + executive notification
-
-```
+  ```
 
 - **Secure Credential Management**
   - Kestra KV Store for secrets
@@ -140,12 +134,7 @@ IncidentScribe AI provides:
   - No hardcoded credentials
   - Rotation-ready architecture
 
-</details>
-
 ### 📡 Universal Webhook Ingestion
-
-<details>
-<summary><b>Click to expand</b></summary>
 
 - **Multi-Source Support**
   - **Datadog** - Full alert payload normalization
@@ -160,50 +149,28 @@ IncidentScribe AI provides:
   - Payload normalization
   - Auto-tagging by severity
 
-- **Organization Authentication**
-  - Unique webhook key per organization
-  - No cross-org data pollution
-  - Rate limiting ready
-  - Audit trail for all ingestions
+### 💻 Command-Line Interface
 
-</details>
+**8 Powerful Commands:**
 
-### 💻 Command-Line Interface (CLI)
+```bash
+analyze         → Single incident AI analysis
+batch-analyze   → Analyze multiple incidents concurrently
+runbook         → Generate operational runbooks
+correlate       → Find related incidents
+trigger         → Manually trigger Kestra workflows
+export          → Export incident data (JSON/CSV/Markdown)
+auto-fix        → Apply safe remediation commands
+replay          → Re-run analysis with updated context
+```
 
-<details>
-<summary><b>Click to expand</b></summary>
-
-- **8 Powerful Commands**
-  ```bash
-  analyze         → Single incident AI analysis
-  batch-analyze   → Analyze multiple incidents concurrently
-  runbook         → Generate operational runbooks
-  correlate       → Find related incidents
-  trigger         → Manually trigger Kestra workflows
-  export          → Export incident data (JSON/CSV/Markdown)
-  auto-fix        → Apply safe remediation commands
-  replay          → Re-run analysis with updated context
-
-```text
-
-- **Safety Features**
-  - Command allowlisting
-  - Dry-run mode for testing
-  - Confirmation prompts for destructive actions
-  - Audit logging
-
-- **Rich Terminal UI**
-  - Colorful output with Chalk
-  - Progress indicators with Ora
-  - Structured tables
-  - Error handling with helpful messages
-
-</details>
+**Safety Features:**
+- Command allowlisting
+- Dry-run mode for testing
+- Confirmation prompts for destructive actions
+- Audit logging
 
 ### 🎨 Mission Control UI
-
-<details>
-<summary><b>Click to expand</b></summary>
 
 - **Dark Terminal Aesthetic**
   - Brutalist design principles
@@ -223,205 +190,131 @@ IncidentScribe AI provides:
   - Timeline of events
   - Related incidents graph
 
-- **Streaming AI Analysis**
-  - Progressive markdown rendering
-  - Syntax-highlighted code blocks
-  - Copy-to-clipboard for commands
-  - Save analysis to database
-
-</details>
-
 ---
 
 ## 🏗️ Architecture
 
+### System Overview
+
 ```
+┌──────────────────────────────────────────────────────────────────────┐
+│                       INCIDENTSCRIBE AI                               │
+│                  Multi-Tenant Incident Management                     │
+└──────────────────────────────────────────────────────────────────────┘
 
-┌────────────────────────────────────────────────────────────────────────┐
-│                         INCIDENTSCRIBE AI                               │
-│                    Multi-Tenant Incident Management                     │
-└────────────────────────────────────────────────────────────────────────┘
-
- ┌─────────────────┐                    ┌─────────────────┐
- │  Monitoring     │                    │   Next.js 16    │
- │  Platforms      │                    │   Frontend      │
- │                 │                    │                 │
- │ • Datadog       │                    │ • React 19      │
- │ • PagerDuty     │                    │ • Tailwind CSS  │
- │ • CloudWatch    │                    │ • Lucide Icons  │
- │ • Prometheus    │                    │ • Recharts      │
- │ • Custom Tools  │                    │ • TypeScript 5  │
- └────────┬────────┘                    └────────┬────────┘
-          │                                      │
-          │ Webhooks                             │ Auth
-          ▼                                      ▼
- ┌─────────────────────────────────────────────────────┐
- │            Webhook Ingestion Layer                  │
- │  • Payload Normalization  • Deduplication           │
- │  • Organization Routing   • Severity Classification │
- └──────────────────┬──────────────────────────────────┘
-                    │
-                    ▼
- ┌──────────────────────────────────────────────────────────┐
- │                   Supabase Backend                       │
- │                                                          │
- │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
- │  │  PostgreSQL  │  │ Supabase Auth│  │  Row Level   │  │
- │  │   Database   │  │   (JWT)      │  │   Security   │  │
- │  │              │  │              │  │   (RLS)      │  │
- │  │ • incidents  │  │ • OAuth 2.0  │  │ • Per-org    │  │
- │  │ • ai_analyses│  │ • Sessions   │  │ • Automatic  │  │
- │  │ • users      │  │ • Refresh    │  │ • Enforced   │  │
- │  │ • orgs       │  │ • Middleware │  │ • Audited    │  │
- │  └──────────────┘  └──────────────┘  └──────────────┘  │
- └───────────┬────────────────┬────────────────────────────┘
-             │                │
-             │                └──────────────┐
-             ▼                               ▼
- ┌─────────────────────┐         ┌─────────────────────┐
- │  Kestra Workflows   │         │   Vercel AI SDK     │
- │                     │         │                     │
- │ • incident-handler  │         │ • Stream responses  │
- │ • auto-remediation  │         │ • Markdown render   │
- │ • post-mortem-gen   │         │ • Real-time output  │
- │ • correlation       │         │ • Error handling    │
- └──────────┬──────────┘         └─────────────────────┘
-            │
-            ▼
- ┌─────────────────────┐
- │  Google Gemini 2.5  │
- │       Flash         │
- │                     │
- │ • Root Cause        │
- │ • Remediation       │
- │ • Impact Analysis   │
- │ • Documentation     │
- └─────────────────────┘
-
-```text
+┌─────────────────┐                      ┌─────────────────┐
+│  Monitoring     │                      │   Next.js 16    │
+│  Platforms      │                      │   Frontend      │
+│                 │                      │                 │
+│ • Datadog       │                      │ • React 19      │
+│ • PagerDuty     │                      │ • Tailwind CSS  │
+│ • CloudWatch    │                      │ • Lucide Icons  │
+│ • Prometheus    │                      │ • Recharts      │
+│ • Custom Tools  │                      │ • TypeScript 5  │
+└────────┬────────┘                      └────────┬────────┘
+         │                                        │
+         │ Webhooks                               │ Auth
+         ▼                                        ▼
+┌─────────────────────────────────────────────────────────┐
+│              Webhook Ingestion Layer                    │
+│  • Payload Normalization  • Deduplication               │
+│  • Organization Routing   • Severity Classification     │
+└──────────────────┬──────────────────────────────────────┘
+                   │
+                   ▼
+┌────────────────────────────────────────────────────────────┐
+│                   Supabase Backend                         │
+│                                                            │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐    │
+│  │  PostgreSQL  │  │ Supabase Auth│  │  Row Level   │    │
+│  │   Database   │  │   (JWT)      │  │   Security   │    │
+│  │              │  │              │  │   (RLS)      │    │
+│  │ • incidents  │  │ • OAuth 2.0  │  │ • Per-org    │    │
+│  │ • ai_analyses│  │ • Sessions   │  │ • Automatic  │    │
+│  │ • users      │  │ • Refresh    │  │ • Enforced   │    │
+│  │ • orgs       │  │ • Middleware │  │ • Audited    │    │
+│  └──────────────┘  └──────────────┘  └──────────────┘    │
+└───────────┬────────────────┬────────────────────────────── ┘
+            │                │
+            │                └──────────────┐
+            ▼                               ▼
+┌─────────────────────┐          ┌─────────────────────┐
+│  Kestra Workflows   │          │   Vercel AI SDK     │
+│                     │          │                     │
+│ • incident-handler  │          │ • Stream responses  │
+│ • auto-remediation  │          │ • Markdown render   │
+│ • post-mortem-gen   │          │ • Real-time output  │
+│ • correlation       │          │ • Error handling    │
+└──────────┬──────────┘          └─────────────────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  Google Gemini 2.5  │
+│       Flash         │
+│                     │
+│ • Root Cause        │
+│ • Remediation       │
+│ • Impact Analysis   │
+│ • Documentation     │
+└─────────────────────┘
+```
 
 ### Data Flow
 
-1. **Incident Ingestion**
-   - External monitoring tool sends webhook
-   - Organization identified by webhook key
-   - Payload normalized to standard format
-   - Saved to Supabase with org context
+**1. Incident Ingestion**
+- External monitoring tool sends webhook
+- Organization identified by webhook key
+- Payload normalized to standard format
+- Saved to Supabase with org context
 
-2. **AI Analysis Trigger**
-   - HIGH/CRITICAL incidents auto-trigger Kestra
-   - User can manually trigger for any incident
-   - Kestra fetches incident + historical context
-   - Multi-agent workflow executes in parallel
+**2. AI Analysis Trigger**
+- HIGH/CRITICAL incidents auto-trigger Kestra
+- User can manually trigger for any incident
+- Kestra fetches incident + historical context
+- Multi-agent workflow executes in parallel
 
-3. **Analysis Execution**
-   - Analyzer agent diagnoses root cause
-   - Remediation agent suggests fixes
-   - Documentation agent generates post-mortem
-   - Correlation agent finds related incidents
+**3. Analysis Execution**
+- Analyzer agent diagnoses root cause
+- Remediation agent suggests fixes
+- Documentation agent generates post-mortem
+- Correlation agent finds related incidents
 
-4. **Result Storage**
-   - Analysis saved to `ai_analyses` table
-   - Linked to original incident
-   - RLS ensures organization isolation
-   - Searchable for future reference
+**4. Result Storage**
+- Analysis saved to `ai_analyses` table
+- Linked to original incident
+- RLS ensures organization isolation
+- Searchable for future reference
 
-5. **User Interface**
-   - Real-time streaming to frontend
-   - Progressive markdown rendering
-   - Copy commands, save results
-   - Trigger follow-up actions
+**5. User Interface**
+- Real-time streaming to frontend
+- Progressive markdown rendering
+- Copy commands, save results
+- Trigger follow-up actions
 
----
-
-## 📂 Project Structure
+### Security Layers
 
 ```
-
-incident-scribe/
-├── frontend/                      # Next.js 16 Application
-│   ├── app/
-│   │   ├── (auth)/
-│   │   │   ├── login/            # Authentication pages
-│   │   │   └── signup/
-│   │   ├── dashboard/            # Main dashboard view
-│   │   │   └── page.tsx
-│   │   ├── incident/
-│   │   │   └── [id]/            # Dynamic incident detail page
-│   │   │       └── page.tsx
-│   │   ├── api/                 # API Routes
-│   │   │   ├── analyze/         # AI streaming analysis
-│   │   │   ├── incidents/       # CRUD operations
-│   │   │   ├── kestra/          # Workflow triggers
-│   │   │   ├── webhooks/        # Ingestion endpoints
-│   │   │   └── analysis/        # Save AI results
-│   │   ├── globals.css          # Mission Control design system
-│   │   ├── layout.tsx
-│   │   └── page.tsx
-│   ├── components/
-│   │   ├── IncidentCard.tsx     # Incident list item
-│   │   ├── IncidentDetail.tsx   # Full incident view
-│   │   ├── AIAnalysis.tsx       # Streaming analysis UI
-│   │   ├── MetricsChart.tsx     # Recharts visualizations
-│   │   └── Header.tsx
-│   ├── lib/
-│   │   ├── supabase/
-│   │   │   ├── client.ts        # Browser Supabase client
-│   │   │   └── server.ts        # SSR Supabase client + auth
-│   │   ├── supabase-queries.ts  # Database operations
-│   │   └── kestra-client.ts     # Workflow API client
-│   ├── types/
-│   │   └── incident.ts          # TypeScript definitions
-│   ├── middleware.ts            # Auth middleware
-│   ├── package.json
-│   └── tsconfig.json
-│
-├── kestra/
-│   └── flows/
-│       ├── incident-handler.yml     # Main analysis workflow
-│       ├── auto-remediation.yml     # Automated fixes
-│       └── post-mortem-generator.yml
-│
-├── cli/                         # Command-Line Interface
-│   ├── index.js                # CLI entry point
-│   ├── commands/
-│   │   ├── analyze.js
-│   │   ├── batch-analyze.js
-│   │   ├── runbook.js
-│   │   ├── correlate.js
-│   │   ├── trigger.js
-│   │   ├── export.js
-│   │   ├── auto-fix.js
-│   │   └── replay.js
-│   ├── utils/
-│   │   ├── supabase.js
-│   │   ├── kestra.js
-│   │   └── formatter.js
-│   └── package.json
-│
-├── database/                    # Database Setup
-│   ├── complete-setup.sql      # All-in-one setup script
-│   ├── migrations/
-│   │   ├── 001_initial_schema.sql
-│   │   ├── 002_multi_tenancy.sql
-│   │   ├── 003_rls_policies.sql
-│   │   └── 004_invite_system.sql
-│   └── seed/
-│       └── demo_data.sql       # Sample organizations & incidents
-│
-├── docs/                        # Documentation
-│   ├── ARCHITECTURE.md
-│   ├── API.md
-│   ├── SECURITY.md
-│   ├── DEPLOYMENT.md
-│   └── CONTRIBUTING.md
-│
-├── docker-compose.yml           # Kestra orchestration
-├── .env.example                # Environment template
-├── LICENSE
-└── README.md
-
-```text
+┌───────────────────────────────────────────────────────────┐
+│ Layer 1: Next.js Middleware                               │
+│ • Validates Supabase Auth JWT tokens                      │
+│ • Blocks unauthenticated requests                         │
+│ • Refreshes expired sessions automatically                │
+└───────────────────────────────────────────────────────────┘
+                            ↓
+┌───────────────────────────────────────────────────────────┐
+│ Layer 2: API Route Authorization                          │
+│ • Fetches user organization from auth.uid()               │
+│ • Validates RBAC permissions                              │
+│ • Organization determined by DATABASE, not user input     │
+└───────────────────────────────────────────────────────────┘
+                            ↓
+┌───────────────────────────────────────────────────────────┐
+│ Layer 3: PostgreSQL Row Level Security (RLS)              │
+│ • Database-enforced isolation per organization            │
+│ • Users CANNOT access other orgs' data                    │
+│ • RLS policies apply to ALL queries automatically         │
+└───────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -429,137 +322,123 @@ incident-scribe/
 
 ### Prerequisites
 
-Before you begin, ensure you have:
-
 - **Node.js** 20.0 or higher ([Download](https://nodejs.org/))
 - **Docker** & Docker Compose ([Download](https://www.docker.com/))
 - **Supabase Account** ([Sign up free](https://supabase.com))
 - **Google Gemini API Key** ([Get free key](https://ai.google.dev/))
 
-### 1. Clone Repository
+### Installation
 
-```
+**1. Clone Repository**
 
+```bash
 git clone https://github.com/Harsh-Daga/Incident-Scribe.git
 cd incident-scribe
-
-```text
-
-### 2. Setup Supabase Database
-
-1. **Create a new project** at [supabase.com](https://supabase.com)
-
-2. **Run the setup script** in Supabase SQL Editor:
-   ```sql
-   -- Go to: Your Project → SQL Editor → New Query
-   -- Copy and paste contents from: database/complete-setup.sql
-   -- Click "Run"
-
 ```
 
-3. **Configure system settings**:
-   ```sql
-   UPDATE system_config SET value = 'YOUR_GEMINI_API_KEY'
-   WHERE key = 'GEMINI_API_KEY';
+**2. Setup Supabase Database**
 
-   UPDATE system_config SET value = 'http://localhost:8080'
-   WHERE key = 'KESTRA_URL';
+Create a new project at [supabase.com](https://supabase.com), then run the setup script in Supabase SQL Editor:
 
-   UPDATE system_config SET value = 'admin@kestra.io'
-   WHERE key = 'KESTRA_USERNAME';
-
-   UPDATE system_config SET value = 'kestra'
-   WHERE key = 'KESTRA_PASSWORD';
-
-```text
-
-4. **Create authentication users** (Supabase Dashboard → Authentication → Users → Add User):
-   - Email: `admin@incidentscribe.com`, Password: `Admin123!` (Platform Admin)
-   - Email: `admin@democompany.com`, Password: `Admin123!` (Org Admin)
-   - Email: `member@democompany.com`, Password: `Member123!` (Member)
-   - Email: `viewer@democompany.com`, Password: `Viewer123!` (Viewer)
-
-5. **Link users to database**:
-   ```sql
-   -- Platform Admin
-   INSERT INTO public.users (id, email, name, organization_id, role, is_platform_admin)
-   SELECT id, email, 'Platform Admin', NULL, 'admin', true
-   FROM auth.users WHERE email = 'admin@incidentscribe.com';
-
-   -- Organization Users (repeat for each user)
-   INSERT INTO public.users (id, email, name, organization_id, role, is_platform_admin)
-   SELECT u.id, u.email, 'Demo Admin', o.id, 'admin', false
-   FROM auth.users u, organizations o
-   WHERE u.email = 'admin@democompany.com' AND o.slug = 'demo-company';
-
-   INSERT INTO public.users (id, email, name, organization_id, role, is_platform_admin)
-   SELECT u.id, u.email, 'Demo Member', o.id, 'member', false
-   FROM auth.users u, organizations o
-   WHERE u.email = 'member@democompany.com' AND o.slug = 'demo-company';
-
-   INSERT INTO public.users (id, email, name, organization_id, role, is_platform_admin)
-   SELECT u.id, u.email, 'Demo Viewer', o.id, 'viewer', false
-   FROM auth.users u, organizations o
-   WHERE u.email = 'viewer@democompany.com' AND o.slug = 'demo-company';
-
+```sql
+-- Go to: Your Project → SQL Editor → New Query
+-- Copy and paste contents from: database/complete-setup.sql
+-- Click "Run"
 ```
 
-### 3. Configure Frontend
+Configure system settings:
+
+```sql
+UPDATE system_config SET value = 'YOUR_GEMINI_API_KEY'
+WHERE key = 'GEMINI_API_KEY';
+
+UPDATE system_config SET value = 'http://localhost:8080'
+WHERE key = 'KESTRA_URL';
+
+UPDATE system_config SET value = 'admin@kestra.io'
+WHERE key = 'KESTRA_USERNAME';
+
+UPDATE system_config SET value = 'kestra'
+WHERE key = 'KESTRA_PASSWORD';
+```
+
+Create authentication users (Supabase Dashboard → Authentication → Users → Add User):
+- Email: `admin@incidentscribe.com`, Password: `Admin123!` (Platform Admin)
+- Email: `admin@democompany.com`, Password: `Admin123!` (Org Admin)
+- Email: `member@democompany.com`, Password: `Member123!` (Member)
+- Email: `viewer@democompany.com`, Password: `Viewer123!` (Viewer)
+
+Link users to database:
+
+```sql
+-- Platform Admin
+INSERT INTO public.users (id, email, name, organization_id, role, is_platform_admin)
+SELECT id, email, 'Platform Admin', NULL, 'admin', true
+FROM auth.users WHERE email = 'admin@incidentscribe.com';
+
+-- Organization Users
+INSERT INTO public.users (id, email, name, organization_id, role, is_platform_admin)
+SELECT u.id, u.email, 'Demo Admin', o.id, 'admin', false
+FROM auth.users u, organizations o
+WHERE u.email = 'admin@democompany.com' AND o.slug = 'demo-company';
+
+INSERT INTO public.users (id, email, name, organization_id, role, is_platform_admin)
+SELECT u.id, u.email, 'Demo Member', o.id, 'member', false
+FROM auth.users u, organizations o
+WHERE u.email = 'member@democompany.com' AND o.slug = 'demo-company';
+
+INSERT INTO public.users (id, email, name, organization_id, role, is_platform_admin)
+SELECT u.id, u.email, 'Demo Viewer', o.id, 'viewer', false
+FROM auth.users u, organizations o
+WHERE u.email = 'viewer@democompany.com' AND o.slug = 'demo-company';
+```
+
+**3. Configure Frontend**
 
 ```bash
 cd frontend
 cp .env.example .env.local
-
 ```
 
-Edit `.env.local` with your Supabase credentials:
+Edit `.env.local`:
 
 ```env
 # Get these from: Supabase Dashboard → Project Settings → API
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-
 ```
 
-### 4. Start Kestra Orchestration
+**4. Start Kestra**
 
 ```bash
 cd ..
 docker compose up -d
-
 ```
 
 Wait for Kestra to start (30-60 seconds), then:
 
-1. **Access Kestra UI**: Open [http://localhost:8080](http://localhost:8080)
-2. **Create namespace**: Namespaces → Create → Name: `incident.response`
-3. **Upload workflow**:
-   - Flows → Create
-   - Copy contents from `kestra/flows/incident-handler.yml`
-   - Click Save
-4. **Configure secrets**:
-   - Namespaces → `incident.response` → KV Store
-   - Add key `GEMINI_API_KEY` with your Google Gemini API key
+1. Access Kestra UI: [http://localhost:8080](http://localhost:8080)
+2. Create namespace: Namespaces → Create → Name: `incident.response`
+3. Upload workflow: Flows → Create → Paste content from `kestra/flows/incident-handler.yml`
+4. Configure secrets: Namespaces → `incident.response` → KV Store → Add `GEMINI_API_KEY`
 
-### 5. Install & Run Frontend
+**5. Run Frontend**
 
 ```bash
 cd frontend
 npm install
 npm run dev
-
 ```
 
-Open [http://localhost:3000](http://localhost:3000) and log in with demo credentials!
+Open [http://localhost:3000](http://localhost:3000)
 
-### 6. Test Webhook Ingestion (Optional)
+**6. Test Webhook (Optional)**
 
-Get your organization's webhook key:
+Get your webhook key:
 
 ```sql
 SELECT webhook_key FROM organizations WHERE slug = 'demo-company';
-
 ```
 
 Send a test incident:
@@ -574,12 +453,13 @@ curl -X POST "http://localhost:3000/api/webhooks/ingest?source=generic&key=YOUR_
     "logs": ["CPU at 95%", "Response time degraded"],
     "metrics": {"cpu_percent": 95, "response_time_ms": 1200}
   }'
-
 ```
 
 ---
 
-## 🧪 Demo Credentials
+## 🧪 Demo
+
+### Demo Credentials
 
 | Role | Email | Password | Permissions |
 |------|-------|----------|-------------|
@@ -587,17 +467,17 @@ curl -X POST "http://localhost:3000/api/webhooks/ingest?source=generic&key=YOUR_
 | **Member** | `member@democompany.com` | `Member123!` | Manage incidents, run AI analysis |
 | **Viewer** | `viewer@democompany.com` | `Viewer123!` | Read-only access |
 
-### What to Try
+### Try These Features
 
 1. **Login as Admin** → View dashboard, manage team members
 2. **Trigger AI Analysis** → Click "Run AI Analysis" on any incident
-3. **Test Webhooks** → Send incident via curl (see above)
+3. **Test Webhooks** → Send incident via curl command above
 4. **Generate Invite Code** → Settings → Invite Users
 5. **Compare Roles** → Login as different users to see RBAC in action
 
 ---
 
-## 🛠️ Technology Stack
+## 🛠️ Tech Stack
 
 | Category | Technology | Purpose |
 |----------|------------|---------|
@@ -623,21 +503,19 @@ curl -X POST "http://localhost:3000/api/webhooks/ingest?source=generic&key=YOUR_
 
 ## 📡 API Reference
 
-### Webhook Endpoints
+### Webhook Ingestion
 
-#### `POST /api/webhooks/ingest`
-
-Ingest incidents from monitoring platforms.
+**Endpoint:** `POST /api/webhooks/ingest`
 
 **Query Parameters:**
-- `source` - Source platform: `datadog`, `pagerduty`, `cloudwatch`, `prometheus`, `generic`
+- `source` - Platform: `datadog`, `pagerduty`, `cloudwatch`, `prometheus`, `generic`
 - `key` - Organization webhook key (required)
 
 **Headers:**
 - `Content-Type: application/json`
 - `X-Webhook-Key` - Alternative to `?key=` parameter
 
-**Example: Datadog**
+**Example - Datadog:**
 
 ```bash
 curl -X POST "http://localhost:3000/api/webhooks/ingest?source=datadog&key=demo-webhook-key-12345" \
@@ -649,10 +527,9 @@ curl -X POST "http://localhost:3000/api/webhooks/ingest?source=datadog&key=demo-
     "tags": ["service:postgres", "env:production"],
     "alert_type": "metric alert"
   }'
-
 ```
 
-**Example: PagerDuty**
+**Example - PagerDuty:**
 
 ```bash
 curl -X POST "http://localhost:3000/api/webhooks/ingest?source=pagerduty&key=demo-webhook-key-12345" \
@@ -668,10 +545,9 @@ curl -X POST "http://localhost:3000/api/webhooks/ingest?source=pagerduty&key=dem
       }
     }]
   }'
-
 ```
 
-**Example: Generic**
+**Example - Generic:**
 
 ```bash
 curl -X POST "http://localhost:3000/api/webhooks/ingest?source=generic&key=demo-webhook-key-12345" \
@@ -683,7 +559,6 @@ curl -X POST "http://localhost:3000/api/webhooks/ingest?source=generic&key=demo-
     "logs": ["Disk usage at 85%", "Warning threshold exceeded"],
     "metrics": {"disk_usage_percent": 85}
   }'
-
 ```
 
 **Response:**
@@ -695,20 +570,19 @@ curl -X POST "http://localhost:3000/api/webhooks/ingest?source=generic&key=demo-
   "organization": "00000000-0000-0000-0000-000000000001",
   "kestra_triggered": true
 }
-
 ```
 
-### Protected API Routes
+### Protected Routes
 
 All routes require authentication via Supabase Auth session.
 
-#### `GET /api/incidents`
+**`GET /api/incidents`**
 
 List incidents for authenticated user's organization.
 
 **Query Parameters:**
-- `status` - Filter by status: `open`, `investigating`, `resolved`, `closed`
-- `severity` - Filter by severity: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`
+- `status` - Filter: `open`, `investigating`, `resolved`, `closed`
+- `severity` - Filter: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`
 - `service` - Filter by service name
 
 **Example:**
@@ -716,10 +590,9 @@ List incidents for authenticated user's organization.
 ```bash
 curl "http://localhost:3000/api/incidents?status=open&severity=HIGH" \
   -H "Cookie: sb-xxx-auth-token=..."
-
 ```
 
-#### `POST /api/analyze`
+**`POST /api/analyze`**
 
 Stream AI analysis for an incident.
 
@@ -730,12 +603,11 @@ Stream AI analysis for an incident.
   "incidentId": "INC-2024-001",
   "includeHistorical": true
 }
-
 ```
 
 **Response:** Server-Sent Events (SSE) stream
 
-#### `POST /api/kestra/trigger`
+**`POST /api/kestra/trigger`**
 
 Manually trigger Kestra workflow.
 
@@ -745,21 +617,17 @@ Manually trigger Kestra workflow.
 {
   "incidentId": "INC-2024-001"
 }
-
 ```
 
 ---
 
 ## 💻 CLI Usage
 
-The CLI provides powerful command-line access to IncidentScribe AI.
-
 ### Installation
 
 ```bash
 cd cli
 npm install
-
 ```
 
 ### Configuration
@@ -772,64 +640,45 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 KESTRA_URL=http://localhost:8080
 KESTRA_USERNAME=admin@kestra.io
 KESTRA_PASSWORD=kestra
-
 ```
 
 ### Commands
 
-#### 1. Analyze Single Incident
+**1. Analyze Single Incident**
 
 ```bash
 node index.js analyze INC-2024-001
-
 ```
 
-Output:
-- Root cause analysis
-- Impact assessment
-- Remediation steps
-- Related incidents
+Output: Root cause analysis, impact assessment, remediation steps, related incidents
 
-#### 2. Batch Analyze Multiple Incidents
+**2. Batch Analyze Multiple Incidents**
 
 ```bash
 node index.js batch-analyze INC-001 INC-002 INC-003
-
 ```
 
-Runs AI analysis on multiple incidents concurrently.
-
-#### 3. Generate Operational Runbook
+**3. Generate Operational Runbook**
 
 ```bash
 node index.js runbook INC-2024-001 --output runbook.md
-
 ```
 
-Creates a detailed runbook from the incident analysis.
-
-#### 4. Find Correlated Incidents
+**4. Find Correlated Incidents**
 
 ```bash
 node index.js correlate INC-2024-001
-
 ```
 
-Finds similar incidents based on:
-- Service name
-- Error patterns
-- Timeframe proximity
+Finds similar incidents based on service name, error patterns, timeframe proximity
 
-#### 5. Trigger Kestra Workflow
+**5. Trigger Kestra Workflow**
 
 ```bash
 node index.js trigger INC-2024-001
-
 ```
 
-Manually triggers the Kestra analysis workflow.
-
-#### 6. Export Incident Data
+**6. Export Incident Data**
 
 ```bash
 # JSON format
@@ -840,10 +689,9 @@ node index.js export INC-2024-001 --format csv
 
 # Markdown format
 node index.js export INC-2024-001 --format markdown
-
 ```
 
-#### 7. Auto-Fix (with Guardrails)
+**7. Auto-Fix (with Guardrails)**
 
 ```bash
 # Dry-run mode
@@ -851,16 +699,14 @@ node index.js auto-fix INC-2024-001 --dry-run
 
 # Execute fixes
 node index.js auto-fix INC-2024-001
-
 ```
 
 Only executes allowlisted safe commands.
 
-#### 8. Replay Analysis
+**8. Replay Analysis**
 
 ```bash
 node index.js replay INC-2024-001
-
 ```
 
 Re-runs analysis with current context (useful if new data available).
@@ -868,32 +714,6 @@ Re-runs analysis with current context (useful if new data available).
 ---
 
 ## 🔒 Security
-
-### Multi-Layer Security Model
-
-```text
-┌─────────────────────────────────────────────────────────┐
-│ Layer 1: Next.js Middleware                             │
-│ • Validates Supabase Auth JWT tokens                    │
-│ • Blocks unauthenticated requests                       │
-│ • Refreshes expired sessions automatically              │
-└─────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────┐
-│ Layer 2: API Route Authorization                        │
-│ • Fetches user organization from auth.uid()             │
-│ • Validates RBAC permissions                            │
-│ • Organization determined by DATABASE, not user input   │
-└─────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────┐
-│ Layer 3: PostgreSQL Row Level Security (RLS)            │
-│ • Database-enforced isolation per organization          │
-│ • Users CANNOT access other orgs' data                  │
-│ • RLS policies apply to ALL queries automatically       │
-└─────────────────────────────────────────────────────────┘
-
-```
 
 ### What Users CANNOT Do
 
@@ -911,7 +731,7 @@ Re-runs analysis with current context (useful if new data available).
 - **CSRF** - SameSite cookies, origin validation
 - **Data Leakage** - RLS enforced at database level
 - **Privilege Escalation** - RBAC checked in API routes + RLS
-- **Webhook Spoofing** - Unique keys per organization, rate limiting ready
+- **Webhook Spoofing** - Unique keys per organization
 
 ### Best Practices
 
@@ -922,6 +742,8 @@ Re-runs analysis with current context (useful if new data available).
 5. **Limit invite code validity** - set short expiration times
 6. **Review user roles** - periodically audit RBAC assignments
 
+For detailed security information, see [SECURITY.md](docs/SECURITY.md)
+
 ---
 
 ## 🌍 Deployment
@@ -930,28 +752,20 @@ Re-runs analysis with current context (useful if new data available).
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Harsh-Daga/Incident-Scribe)
 
-1. **Import repository** to Vercel
-2. **Set environment variables**:
+1. Import repository to Vercel
+2. Set environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+3. Deploy - Vercel auto-detects Next.js
 
-```text
-   NEXT_PUBLIC_SUPABASE_URL
-   NEXT_PUBLIC_SUPABASE_ANON_KEY
-   SUPABASE_SERVICE_ROLE_KEY
-
-```
-
-3. **Deploy** - Vercel auto-detects Next.js
-
-### Kestra (Self-Hosted or Cloud)
+### Kestra
 
 **Self-Hosted:**
 
 ```bash
 docker compose up -d
-
 ```
 
 **Kestra Cloud:**
+
 1. Sign up at [kestra.io](https://kestra.io)
 2. Upload workflow files from `kestra/flows/`
 3. Configure KV Store with secrets
@@ -961,28 +775,13 @@ docker compose up -d
 
 Your Supabase project is already cloud-hosted. For production:
 
-1. **Upgrade plan** if needed (free tier is generous)
-2. **Enable email confirmations** (Auth → Settings)
-3. **Configure custom SMTP** (Auth → Settings → SMTP)
-4. **Set up backups** (Database → Backups)
-5. **Enable database logs** (Logs & Insights)
+1. Upgrade plan if needed (free tier is generous)
+2. Enable email confirmations (Auth → Settings)
+3. Configure custom SMTP (Auth → Settings → SMTP)
+4. Set up backups (Database → Backups)
+5. Enable database logs (Logs & Insights)
 
-### Environment Variables Reference
-
-| Variable | Description | Required | Example |
-|----------|-------------|----------|---------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | Yes | `https://xxx.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/public key | Yes | `eyJhbGci...` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key | Yes | `eyJhbGci...` |
-
-System config (stored in Supabase `system_config` table):
-
-| Key | Description | Example |
-|-----|-------------|---------|
-| `KESTRA_URL` | Kestra server URL | `http://localhost:8080` |
-| `KESTRA_USERNAME` | Kestra auth username | `admin@kestra.io` |
-| `KESTRA_PASSWORD` | Kestra auth password | `kestra` |
-| `GEMINI_API_KEY` | Google Gemini API key | `AIzaSy...` |
+For detailed deployment guide, see [DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
 ---
 
@@ -993,6 +792,9 @@ System config (stored in Supabase `system_config` table):
 - **[Security Guide](docs/SECURITY.md)** - Security model and best practices
 - **[Deployment Guide](docs/DEPLOYMENT.md)** - Production deployment
 - **[Contributing Guide](docs/CONTRIBUTING.md)** - How to contribute
+- **[CLI Guide](docs/CLI.md)** - Command-line tool usage
+- **[Kestra Workflows](docs/KESTRA.md)** - Workflow orchestration
+- **[Webhook Integration](docs/WEBHOOKS.md)** - Webhook setup
 
 ---
 
@@ -1000,13 +802,13 @@ System config (stored in Supabase `system_config` table):
 
 We welcome contributions! Please see our [Contributing Guide](docs/CONTRIBUTING.md) for details.
 
-### Quick Contribution Steps
+### Quick Steps
 
-1. **Fork the repository**
-2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
-3. **Commit your changes**: `git commit -m 'Add amazing feature'`
-4. **Push to branch**: `git push origin feature/amazing-feature`
-5. **Open a Pull Request**
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push to branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
 
 ### Development Setup
 
@@ -1023,7 +825,6 @@ npm run dev
 
 # In another terminal, start Kestra
 docker compose up -d
-
 ```
 
 ### Code Standards
@@ -1040,20 +841,50 @@ docker compose up -d
 
 Built for the **AI Agents Assemble Hackathon** by Kestra.
 
-### Hackathon Technologies Used
+### Technologies Used
 
 - ✅ **Kestra** - Multi-agent workflow orchestration
 - ✅ **Vercel AI SDK** - Real-time AI streaming
 - ✅ **Cline** - AI-assisted development
 
-### What Makes This Project Unique
+### What Makes This Unique
 
-1. **Production-Ready** - Not a prototype, but a fully functional system
+1. **Production-Ready** - Not a prototype, fully functional system
 2. **Enterprise Security** - Multi-tenancy with RLS, RBAC, audit logging
 3. **Multi-Agent AI** - Specialized agents for different analysis tasks
 4. **Real-World Integration** - Works with actual monitoring platforms
 5. **Beautiful UX** - Mission Control design system with glassmorphism
 6. **Comprehensive** - Frontend, backend, CLI, workflows, documentation
+
+---
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+```
+MIT License
+
+Copyright (c) 2024 Harsh Daga
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
 
 ---
 
@@ -1075,10 +906,12 @@ If you find this project useful, please consider giving it a star! It helps othe
 
 ---
 
-<div align="center">
+<p align="center">
+  <strong>Built with ❤️ by <a href="https://github.com/Harsh-Daga">Harsh Daga</a></strong>
+</p>
 
-**Built with ❤️ by [Harsh Daga](https://github.com/Harsh-Daga)**
-
-[Report Bug](https://github.com/Harsh-Daga/Incident-Scribe/issues) • [Request Feature](https://github.com/Harsh-Daga/Incident-Scribe/issues) • [Documentation](docs/)
-
-</div>
+<p align="center">
+  <a href="https://github.com/Harsh-Daga/Incident-Scribe/issues">Report Bug</a> •
+  <a href="https://github.com/Harsh-Daga/Incident-Scribe/issues">Request Feature</a> •
+  <a href="docs/">Documentation</a>
+</p>
