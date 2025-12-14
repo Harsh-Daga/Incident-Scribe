@@ -2,7 +2,7 @@
 
 # 🚨 IncidentScribe AI
 
-### AI-Powered Incident Management with Autonomous Multi-Agent Analysis
+## AI-Powered Incident Management with Autonomous Multi-Agent Analysis
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.0-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
@@ -62,12 +62,14 @@ IncidentScribe AI provides:
   - Webhook authentication per organization
 
 - **Role-Based Access Control (RBAC)**
-  ```
+
+```text
   Platform Admin → Full system access, create organizations
   Org Admin      → Manage users, view webhook keys, generate invite codes
   Member         → Full incident management and analysis
   Viewer         → Read-only access to incidents
-  ```
+
+```
 
 - **Invite Code System**
   - Secure user onboarding with time-limited codes
@@ -94,12 +96,14 @@ IncidentScribe AI provides:
   - Structured JSON output
 
 - **Multi-Agent Kestra Workflow**
-  ```
+
+```text
   Analyzer Agent     → Diagnoses root cause from logs/metrics
   Remediation Agent  → Generates safe, actionable fix commands
   Documentation Agent → Creates comprehensive post-mortems
   Correlation Agent  → Finds related historical incidents
-  ```
+
+```
 
 - **Persistent Knowledge Base**
   - All analyses saved to database
@@ -121,12 +125,14 @@ IncidentScribe AI provides:
   - Parallel execution of analysis tasks
 
 - **Decision Engine**
-  ```
+
+```text
   LOW severity      → Auto-fix suggestions, optional approval
   MEDIUM severity   → Manual review required before remediation
   HIGH severity     → Immediate escalation + AI analysis
   CRITICAL severity → All hands on deck + executive notification
-  ```
+
+```
 
 - **Secure Credential Management**
   - Kestra KV Store for secrets
@@ -177,7 +183,8 @@ IncidentScribe AI provides:
   export          → Export incident data (JSON/CSV/Markdown)
   auto-fix        → Apply safe remediation commands
   replay          → Re-run analysis with updated context
-  ```
+
+```text
 
 - **Safety Features**
   - Command allowlisting
@@ -229,6 +236,7 @@ IncidentScribe AI provides:
 ## 🏗️ Architecture
 
 ```
+
 ┌────────────────────────────────────────────────────────────────────────┐
 │                         INCIDENTSCRIBE AI                               │
 │                    Multi-Tenant Incident Management                     │
@@ -289,7 +297,8 @@ IncidentScribe AI provides:
  │ • Impact Analysis   │
  │ • Documentation     │
  └─────────────────────┘
-```
+
+```text
 
 ### Data Flow
 
@@ -328,6 +337,7 @@ IncidentScribe AI provides:
 ## 📂 Project Structure
 
 ```
+
 incident-scribe/
 ├── frontend/                      # Next.js 16 Application
 │   ├── app/
@@ -410,7 +420,8 @@ incident-scribe/
 ├── .env.example                # Environment template
 ├── LICENSE
 └── README.md
-```
+
+```text
 
 ---
 
@@ -427,10 +438,12 @@ Before you begin, ensure you have:
 
 ### 1. Clone Repository
 
-```bash
+```
+
 git clone https://github.com/Harsh-Daga/Incident-Scribe.git
 cd incident-scribe
-```
+
+```text
 
 ### 2. Setup Supabase Database
 
@@ -441,7 +454,8 @@ cd incident-scribe
    -- Go to: Your Project → SQL Editor → New Query
    -- Copy and paste contents from: database/complete-setup.sql
    -- Click "Run"
-   ```
+
+```
 
 3. **Configure system settings**:
    ```sql
@@ -456,7 +470,8 @@ cd incident-scribe
 
    UPDATE system_config SET value = 'kestra'
    WHERE key = 'KESTRA_PASSWORD';
-   ```
+
+```text
 
 4. **Create authentication users** (Supabase Dashboard → Authentication → Users → Add User):
    - Email: `admin@incidentscribe.com`, Password: `Admin123!` (Platform Admin)
@@ -486,13 +501,15 @@ cd incident-scribe
    SELECT u.id, u.email, 'Demo Viewer', o.id, 'viewer', false
    FROM auth.users u, organizations o
    WHERE u.email = 'viewer@democompany.com' AND o.slug = 'demo-company';
-   ```
+
+```
 
 ### 3. Configure Frontend
 
 ```bash
 cd frontend
 cp .env.example .env.local
+
 ```
 
 Edit `.env.local` with your Supabase credentials:
@@ -502,6 +519,7 @@ Edit `.env.local` with your Supabase credentials:
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
 ```
 
 ### 4. Start Kestra Orchestration
@@ -509,6 +527,7 @@ SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```bash
 cd ..
 docker compose up -d
+
 ```
 
 Wait for Kestra to start (30-60 seconds), then:
@@ -529,6 +548,7 @@ Wait for Kestra to start (30-60 seconds), then:
 cd frontend
 npm install
 npm run dev
+
 ```
 
 Open [http://localhost:3000](http://localhost:3000) and log in with demo credentials!
@@ -536,11 +556,14 @@ Open [http://localhost:3000](http://localhost:3000) and log in with demo credent
 ### 6. Test Webhook Ingestion (Optional)
 
 Get your organization's webhook key:
+
 ```sql
 SELECT webhook_key FROM organizations WHERE slug = 'demo-company';
+
 ```
 
 Send a test incident:
+
 ```bash
 curl -X POST "http://localhost:3000/api/webhooks/ingest?source=generic&key=YOUR_WEBHOOK_KEY" \
   -H "Content-Type: application/json" \
@@ -551,6 +574,7 @@ curl -X POST "http://localhost:3000/api/webhooks/ingest?source=generic&key=YOUR_
     "logs": ["CPU at 95%", "Response time degraded"],
     "metrics": {"cpu_percent": 95, "response_time_ms": 1200}
   }'
+
 ```
 
 ---
@@ -614,6 +638,7 @@ Ingest incidents from monitoring platforms.
 - `X-Webhook-Key` - Alternative to `?key=` parameter
 
 **Example: Datadog**
+
 ```bash
 curl -X POST "http://localhost:3000/api/webhooks/ingest?source=datadog&key=demo-webhook-key-12345" \
   -H "Content-Type: application/json" \
@@ -624,9 +649,11 @@ curl -X POST "http://localhost:3000/api/webhooks/ingest?source=datadog&key=demo-
     "tags": ["service:postgres", "env:production"],
     "alert_type": "metric alert"
   }'
+
 ```
 
 **Example: PagerDuty**
+
 ```bash
 curl -X POST "http://localhost:3000/api/webhooks/ingest?source=pagerduty&key=demo-webhook-key-12345" \
   -H "Content-Type: application/json" \
@@ -641,9 +668,11 @@ curl -X POST "http://localhost:3000/api/webhooks/ingest?source=pagerduty&key=dem
       }
     }]
   }'
+
 ```
 
 **Example: Generic**
+
 ```bash
 curl -X POST "http://localhost:3000/api/webhooks/ingest?source=generic&key=demo-webhook-key-12345" \
   -H "Content-Type: application/json" \
@@ -654,9 +683,11 @@ curl -X POST "http://localhost:3000/api/webhooks/ingest?source=generic&key=demo-
     "logs": ["Disk usage at 85%", "Warning threshold exceeded"],
     "metrics": {"disk_usage_percent": 85}
   }'
+
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -664,6 +695,7 @@ curl -X POST "http://localhost:3000/api/webhooks/ingest?source=generic&key=demo-
   "organization": "00000000-0000-0000-0000-000000000001",
   "kestra_triggered": true
 }
+
 ```
 
 ### Protected API Routes
@@ -680,9 +712,11 @@ List incidents for authenticated user's organization.
 - `service` - Filter by service name
 
 **Example:**
+
 ```bash
 curl "http://localhost:3000/api/incidents?status=open&severity=HIGH" \
   -H "Cookie: sb-xxx-auth-token=..."
+
 ```
 
 #### `POST /api/analyze`
@@ -690,11 +724,13 @@ curl "http://localhost:3000/api/incidents?status=open&severity=HIGH" \
 Stream AI analysis for an incident.
 
 **Body:**
+
 ```json
 {
   "incidentId": "INC-2024-001",
   "includeHistorical": true
 }
+
 ```
 
 **Response:** Server-Sent Events (SSE) stream
@@ -704,10 +740,12 @@ Stream AI analysis for an incident.
 Manually trigger Kestra workflow.
 
 **Body:**
+
 ```json
 {
   "incidentId": "INC-2024-001"
 }
+
 ```
 
 ---
@@ -721,17 +759,20 @@ The CLI provides powerful command-line access to IncidentScribe AI.
 ```bash
 cd cli
 npm install
+
 ```
 
 ### Configuration
 
 Create `.env` file:
+
 ```env
 SUPABASE_URL=https://xxx.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 KESTRA_URL=http://localhost:8080
 KESTRA_USERNAME=admin@kestra.io
 KESTRA_PASSWORD=kestra
+
 ```
 
 ### Commands
@@ -740,6 +781,7 @@ KESTRA_PASSWORD=kestra
 
 ```bash
 node index.js analyze INC-2024-001
+
 ```
 
 Output:
@@ -752,6 +794,7 @@ Output:
 
 ```bash
 node index.js batch-analyze INC-001 INC-002 INC-003
+
 ```
 
 Runs AI analysis on multiple incidents concurrently.
@@ -760,6 +803,7 @@ Runs AI analysis on multiple incidents concurrently.
 
 ```bash
 node index.js runbook INC-2024-001 --output runbook.md
+
 ```
 
 Creates a detailed runbook from the incident analysis.
@@ -768,6 +812,7 @@ Creates a detailed runbook from the incident analysis.
 
 ```bash
 node index.js correlate INC-2024-001
+
 ```
 
 Finds similar incidents based on:
@@ -779,6 +824,7 @@ Finds similar incidents based on:
 
 ```bash
 node index.js trigger INC-2024-001
+
 ```
 
 Manually triggers the Kestra analysis workflow.
@@ -794,6 +840,7 @@ node index.js export INC-2024-001 --format csv
 
 # Markdown format
 node index.js export INC-2024-001 --format markdown
+
 ```
 
 #### 7. Auto-Fix (with Guardrails)
@@ -804,6 +851,7 @@ node index.js auto-fix INC-2024-001 --dry-run
 
 # Execute fixes
 node index.js auto-fix INC-2024-001
+
 ```
 
 Only executes allowlisted safe commands.
@@ -812,6 +860,7 @@ Only executes allowlisted safe commands.
 
 ```bash
 node index.js replay INC-2024-001
+
 ```
 
 Re-runs analysis with current context (useful if new data available).
@@ -822,7 +871,7 @@ Re-runs analysis with current context (useful if new data available).
 
 ### Multi-Layer Security Model
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │ Layer 1: Next.js Middleware                             │
 │ • Validates Supabase Auth JWT tokens                    │
@@ -843,6 +892,7 @@ Re-runs analysis with current context (useful if new data available).
 │ • Users CANNOT access other orgs' data                  │
 │ • RLS policies apply to ALL queries automatically       │
 └─────────────────────────────────────────────────────────┘
+
 ```
 
 ### What Users CANNOT Do
@@ -882,18 +932,23 @@ Re-runs analysis with current context (useful if new data available).
 
 1. **Import repository** to Vercel
 2. **Set environment variables**:
-   ```
+
+```text
    NEXT_PUBLIC_SUPABASE_URL
    NEXT_PUBLIC_SUPABASE_ANON_KEY
    SUPABASE_SERVICE_ROLE_KEY
-   ```
+
+```
+
 3. **Deploy** - Vercel auto-detects Next.js
 
 ### Kestra (Self-Hosted or Cloud)
 
 **Self-Hosted:**
+
 ```bash
 docker compose up -d
+
 ```
 
 **Kestra Cloud:**
@@ -968,6 +1023,7 @@ npm run dev
 
 # In another terminal, start Kestra
 docker compose up -d
+
 ```
 
 ### Code Standards
