@@ -902,7 +902,7 @@ SOFTWARE.
 
 If you find this project useful, please consider giving it a star! It helps others discover the project.
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Harsh-Daga/Incident-Scribe&type=Date)](https://star-history.com/#Harsh-Daga/Incident-Scribe&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=Harsh-Daga/Incident-Scribe&type=date&legend=top-left)](https://www.star-history.com/#Harsh-Daga/Incident-Scribe&type=date&legend=top-left)
 
 ---
 
