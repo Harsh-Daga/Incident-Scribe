@@ -41,8 +41,11 @@ export async function GET(
       .select('*')
       .eq('external_id', id);
 
-    // For non-platform admins, explicitly filter by organization
-    if (!userData.is_platform_admin && userData.organization_id) {
+    // For non-platform admins, explicitly filter by organization (fail closed)
+    if (!userData.is_platform_admin) {
+      if (!userData.organization_id) {
+        return NextResponse.json({ error: 'Forbidden - no organization assigned' }, { status: 403 });
+      }
       query = query.eq('organization_id', userData.organization_id);
     }
 

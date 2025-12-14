@@ -19,11 +19,12 @@ export function generateWebhookKey(): string {
  * Generate a URL-safe slug from a name
  */
 export function generateSlug(name: string): string {
-  return name
+  const slug = name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
     .substring(0, 50);
+  return slug || `org-${Date.now()}`;
 }
 
 /**
@@ -46,7 +47,7 @@ export async function validateInviteCode(code: string): Promise<{
       role,
       expires_at,
       max_uses,
-      uses_count,
+      current_uses,
       active,
       organizations:organization_id (
         id,
@@ -69,7 +70,7 @@ export async function validateInviteCode(code: string): Promise<{
     return { isValid: false, error: 'Invite code has expired' };
   }
 
-  if (inviteCode.max_uses !== null && inviteCode.uses_count >= inviteCode.max_uses) {
+  if (inviteCode.max_uses !== null && inviteCode.current_uses >= inviteCode.max_uses) {
     return { isValid: false, error: 'Invite code has reached maximum uses' };
   }
 
@@ -181,7 +182,10 @@ export async function createOrganization(
   if (userError) {
     console.error('Error creating admin user:', userError);
     // Rollback organization creation
-    await supabase.from('organizations').delete().eq('id', org.id);
+    const { error: rollbackError } = await supabase.from('organizations').delete().eq('id', org.id);
+    if (rollbackError) {
+      console.error('Failed to rollback organization:', rollbackError);
+    }
     return null;
   }
 
@@ -311,7 +315,7 @@ export async function listInviteCodes(organizationId: string): Promise<Array<{
     role: code.role,
     expiresAt: code.expires_at,
     maxUses: code.max_uses,
-    usesCount: code.uses_count,
+    usesCount: code.current_uses,
     active: code.active,
     createdAt: code.created_at
   }));

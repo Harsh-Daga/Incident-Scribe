@@ -345,9 +345,9 @@ export default function WebhooksPage() {
               </h2>
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                  <span className="text-sm font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
                     Base URL
-                  </label>
+                  </span>
                   <div className="flex items-center gap-3">
                     <code className="flex-1 px-4 py-3 rounded-lg font-mono text-sm"
                       style={{ background: 'var(--bg-card)', color: 'var(--accent-cyan)' }}>
@@ -367,9 +367,9 @@ export default function WebhooksPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                  <span className="text-sm font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
                     Query Parameters
-                  </label>
+                  </span>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="p-4 rounded-lg" style={{ background: 'var(--bg-card)' }}>
                       <code className="text-sm" style={{ color: 'var(--accent-magenta)' }}>source</code>
@@ -439,9 +439,9 @@ export default function WebhooksPage() {
               
               {/* Full URL */}
               <div className="mb-6">
-                <label className="text-sm font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                <span className="text-sm font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
                   Full Webhook URL (copy this)
-                </label>
+                </span>
                 <div className="flex items-center gap-3">
                   <code className="flex-1 px-4 py-3 rounded-lg font-mono text-xs break-all"
                     style={{ background: 'var(--bg-card)', color: 'var(--accent-cyan)' }}>

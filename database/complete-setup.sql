@@ -255,6 +255,7 @@ ALTER TABLE incidents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ai_analyses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE invite_codes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE system_config ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
 
 -- Drop existing policies if any
 DROP POLICY IF EXISTS users_self ON users;
@@ -332,6 +333,16 @@ CREATE POLICY "system_config_platform_admin" ON system_config FOR ALL
 CREATE POLICY "system_config_read_authenticated" ON system_config FOR SELECT
   USING (auth.uid() IS NOT NULL);
 
+-- Audit log policies
+DROP POLICY IF EXISTS audit_log_org_users ON audit_log;
+DROP POLICY IF EXISTS audit_log_platform_admin ON audit_log;
+
+CREATE POLICY "audit_log_platform_admin" ON audit_log FOR ALL
+  USING (public.is_platform_admin() = true);
+
+CREATE POLICY "audit_log_org_users" ON audit_log FOR SELECT
+  USING (organization_id = public.get_user_organization_id());
+
 -- ============================================================================
 -- PART 6: INITIAL SYSTEM CONFIGURATION
 -- ============================================================================
@@ -361,9 +372,7 @@ ON CONFLICT (slug) DO NOTHING;
 -- PART 8: SAMPLE INCIDENTS (for demo)
 -- ============================================================================
 
--- Add unique constraint for idempotent inserts
-ALTER TABLE incidents DROP CONSTRAINT IF EXISTS incidents_external_id_org_unique;
-ALTER TABLE incidents ADD CONSTRAINT incidents_external_id_org_unique UNIQUE (external_id, organization_id);
+-- Note: UNIQUE(external_id, organization_id) is already defined in table creation (line 61)
 
 -- Insert sample incidents for Demo Company
 DO $$

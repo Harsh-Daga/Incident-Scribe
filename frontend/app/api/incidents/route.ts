@@ -43,7 +43,10 @@ export async function GET(req: NextRequest) {
       .limit(100);
 
     // For non-platform admins, explicitly filter by organization
-    if (!userData.is_platform_admin && userData.organization_id) {
+    if (!userData.is_platform_admin) {
+      if (!userData.organization_id) {
+        return NextResponse.json({ error: 'Forbidden - no organization assigned' }, { status: 403 });
+      }
       query = query.eq('organization_id', userData.organization_id);
     }
 

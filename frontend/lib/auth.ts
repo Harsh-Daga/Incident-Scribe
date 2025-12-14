@@ -23,6 +23,10 @@ export async function getSession(): Promise<Session | null> {
 
   try {
     const session = JSON.parse(sessionCookie.value);
+    // Basic validation to prevent malformed/tampered cookie data
+    if (!session?.userId || !session?.email || !session?.organizationId) {
+      return null;
+    }
     return session;
   } catch {
     return null;
