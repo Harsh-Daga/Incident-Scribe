@@ -1,36 +1,88 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# IncidentScribe Frontend
 
-## Getting Started
+Next.js 15 frontend for IncidentScribe AI - the AI-powered incident management system.
 
-First, run the development server:
+## Prerequisites
+
+- Node.js 20+
+- Supabase project configured
+- Kestra running (optional, for workflow features)
+
+## Setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Configure environment:
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local`:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+
+3. Run development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Pages
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Route | Description |
+|-------|-------------|
+| `/` | Landing page |
+| `/login` | Login page |
+| `/signup` | Signup with invite code |
+| `/dashboard` | Incident list |
+| `/incident/[id]` | Incident detail with AI analysis |
+| `/dashboard/docs` | Documentation |
+| `/dashboard/webhooks` | Webhook setup guide |
+| `/dashboard/organization` | Org settings (admin) |
+| `/dashboard/admin` | Platform admin |
 
-## Learn More
+## API Routes
 
-To learn more about Next.js, take a look at the following resources:
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/incidents` | GET | List incidents |
+| `/api/incidents/[id]` | GET | Get incident |
+| `/api/analyze` | POST | Stream AI analysis |
+| `/api/kestra/trigger` | POST | Trigger workflow |
+| `/api/analysis/save` | POST | Save AI results |
+| `/api/webhooks/ingest` | POST | Webhook ingestion |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Key Components
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `MarkdownRenderer` - Renders AI analysis with proper formatting
+- `QuickStartGuide` - Onboarding wizard
+- `UserMenu` - Auth dropdown with portal for z-index
+- `LoadingSpinner` - Consistent loading states
 
-## Deploy on Vercel
+## Tech Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Framework**: Next.js 15 (App Router)
+- **Styling**: Tailwind CSS
+- **Auth**: Supabase Auth + RLS
+- **AI**: Vercel AI SDK + Gemini
+- **Markdown**: react-markdown + remark-gfm
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deploy to Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Harsh-Daga/Incident-Scribe)
+
+Set environment variables in Vercel dashboard:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`

@@ -103,7 +103,9 @@ export async function POST(req: NextRequest) {
     // Send Slack notification (non-blocking)
     try {
       const incident = await getIncident(incidentId);
-      await notifyRemediationAction(incident, action, true, result.output);
+      if (incident) {
+        await notifyRemediationAction(incident, action, true, result.output);
+      }
     } catch (error) {
       console.error('Failed to send Slack notification:', error);
     }

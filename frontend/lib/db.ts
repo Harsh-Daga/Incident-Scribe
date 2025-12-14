@@ -16,6 +16,7 @@ export const supabase = createClient(
 export interface Incident {
   id: string;
   external_id: string;
+  organization_id: string;
   source: string;
   timestamp: string;
   service: string;

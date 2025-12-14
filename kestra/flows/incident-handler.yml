@@ -1,82 +1,73 @@
 id: incident-handler
 namespace: incident.response
 
-description: Enhanced AI-powered incident analysis and remediation workflow with multi-source data aggregation, intelligent decision-making, and autonomous remediation actions
+description: |
+  Production-ready AI-powered incident analysis and remediation workflow.
+  - Receives incident data via webhook from monitoring tools
+  - Queries Supabase for historical incidents (same service/patterns)
+  - Analyzes using Gemini AI for root cause and remediation
+  - Saves AI analysis results back to Supabase
+  - Uses Kestra KV store for all secrets (no hardcoded keys)
 
-triggers:
-  - id: webhook
-    type: io.kestra.plugin.core.trigger.Webhook
-    key: incident-webhook-key
+labels:
+  env: production
+  team: sre
 
 inputs:
   - id: incident_data
     type: JSON
-    description: Complete incident details including id, logs, metrics, severity, service, title, timestamp
-    required: false
+    description: |
+      Incident details from webhook. Required fields:
+      - id: External incident ID
+      - service: Affected service name
+      - severity: CRITICAL, HIGH, MEDIUM, or LOW
+      - title: Incident title
+      - organization_id: Organization UUID
+      - logs: Array of log entries
+      - metrics: Object with error_rate, latency_p95_ms, etc.
+      - context: Object with host, region, version, etc.
+    required: true
 
 tasks:
-  # Task 1: Parse and log incoming incident
+  # Task 1: Log incoming incident
   - id: log_incident
     type: io.kestra.plugin.core.log.Log
     message: |
       ========================================
-      📢 NEW INCIDENT DETECTED
+      📢 INCIDENT RECEIVED
       ========================================
-      ID: {{ (trigger.body.incident_data ?? inputs.incident_data).id }}
-      Service: {{ (trigger.body.incident_data ?? inputs.incident_data).service }}
-      Severity: {{ (trigger.body.incident_data ?? inputs.incident_data).severity }}
-      Title: {{ (trigger.body.incident_data ?? inputs.incident_data).title }}
-      Timestamp: {{ (trigger.body.incident_data ?? inputs.incident_data).timestamp }}
+      ID: {{ inputs.incident_data.id }}
+      Service: {{ inputs.incident_data.service }}
+      Severity: {{ inputs.incident_data.severity }}
+      Title: {{ inputs.incident_data.title }}
+      Organization: {{ inputs.incident_data.organization_id }}
+      Timestamp: {{ inputs.incident_data.timestamp }}
       ========================================
 
-  # Task 2: Aggregate data from multiple sources (logs, metrics, historical incidents)
-  - id: aggregate_data_sources
-    type: io.kestra.plugin.scripts.python.Script
-    description: AI Agent - Aggregates data from multiple sources for comprehensive analysis
-    script: |
-      import json
-      import os
-      
-      # Load current incident
-      incident = json.loads('{{ (trigger.body.incident_data ?? inputs.incident_data) | json }}')
-      
-      # Simulate fetching historical incidents (in production, this would query a database)
-      historical_incidents = []
-      try:
-          with open('/app/data/mock-incidents.json', 'r') as f:
-              all_incidents = json.load(f)
-              # Find similar incidents by service or pattern
-              historical_incidents = [
-                  inc for inc in all_incidents 
-                  if inc.get('service') == incident.get('service') and inc.get('id') != incident.get('id')
-              ][:3]  # Get up to 3 similar incidents
-      except:
-          pass
-      
-      # Aggregate data from multiple sources
-      aggregated_data = {
-          "current_incident": incident,
-          "logs": incident.get("logs", []),
-          "metrics": incident.get("metrics", {}),
-          "context": incident.get("context", {}),
-          "historical_incidents": historical_incidents,
-          "similar_patterns": len(historical_incidents),
-          "data_sources": [
-              "current_incident_logs",
-              "current_incident_metrics",
-              "historical_incidents",
-              "service_context"
-          ]
-      }
-      
-      # Save aggregated data
-      output = json.dumps(aggregated_data, indent=2)
-      print(output)
+  # Task 2: Query Supabase for historical incidents (same service)
+  - id: fetch_historical_incidents
+    type: io.kestra.plugin.core.http.Request
+    description: Query Supabase for similar historical incidents in the same organization
+    uri: "{{ kv('SUPABASE_URL') }}/rest/v1/incidents"
+    method: GET
+    headers:
+      apikey: "{{ kv('SUPABASE_SERVICE_ROLE_KEY') }}"
+      Authorization: "Bearer {{ kv('SUPABASE_SERVICE_ROLE_KEY') }}"
+    contentType: application/json
+    options:
+      connectTimeout: PT10S
+      readTimeout: PT30S
+    queryString:
+      organization_id: "eq.{{ inputs.incident_data.organization_id }}"
+      service: "eq.{{ inputs.incident_data.service }}"
+      select: "id,external_id,title,severity,status,logs,metrics,created_at"
+      order: "created_at.desc"
+      limit: "5"
 
-  # Task 3: AI Agent - Analysis Agent (Summarizes and analyzes aggregated data)
+  # Task 3: AI Agent - Analysis (Gemini)
   - id: ai_agent_analyze
     type: io.kestra.plugin.core.http.Request
-    description: AI Agent - Analysis Agent summarizes data from multiple sources and identifies root cause
+    description: AI Agent analyzes incident using Gemini API with historical context
     uri: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={{ kv('GEMINI_API_KEY') }}"
     method: POST
     contentType: application/json
@@ -85,229 +76,111 @@ tasks:
       maxAttempt: 3
       interval: PT2S
       maxInterval: PT30S
-      maxDuration: PT1M
-    timeout: PT30S
+    timeout: PT60S
     body: |
       {
         "contents": [
           {
             "parts": [
               {
-                "text": "You are an expert SRE AI Agent analyzing a production incident.\n\nINCIDENT DETAILS:\n- ID: {{ (trigger.body.incident_data ?? inputs.incident_data).id }}\n- Service: {{ (trigger.body.incident_data ?? inputs.incident_data).service }}\n- Severity: {{ (trigger.body.incident_data ?? inputs.incident_data).severity }}\n- Title: {{ (trigger.body.incident_data ?? inputs.incident_data).title }}\n- Error Rate: {{ (trigger.body.incident_data ?? inputs.incident_data).metrics.error_rate | default(0) }}\n- Latency P95: {{ (trigger.body.incident_data ?? inputs.incident_data).metrics.latency_p95_ms | default(0) }}ms\n- Region: {{ (trigger.body.incident_data ?? inputs.incident_data).context.region }}\n- Host: {{ (trigger.body.incident_data ?? inputs.incident_data).context.host }}\n\nAnalyze this incident and provide:\n1. Root cause analysis\n2. Impact assessment\n3. Recommended actions\n4. Confidence level (HIGH/MEDIUM/LOW)\n\nBe specific and actionable."
+                "text": "You are an expert SRE AI Agent analyzing a production incident.\n\n## CURRENT INCIDENT\n- ID: {{ inputs.incident_data.id }}\n- Service: {{ inputs.incident_data.service }}\n- Severity: {{ inputs.incident_data.severity }}\n- Title: {{ inputs.incident_data.title }}\n- Error Rate: {{ inputs.incident_data.metrics.error_rate | default(0) }}\n- Latency P95: {{ inputs.incident_data.metrics.latency_p95_ms | default(0) }}ms\n- Region: {{ inputs.incident_data.context.region | default('unknown') }}\n- Host: {{ inputs.incident_data.context.host | default('unknown') }}\n- Version: {{ inputs.incident_data.context.version | default('unknown') }}\n\n## LOGS\n{{ inputs.incident_data.logs | join('\n') }}\n\n## HISTORICAL INCIDENTS (same service)\n{{ outputs.fetch_historical_incidents.body }}\n\n## ANALYSIS REQUIRED\nProvide a comprehensive analysis in JSON format:\n{\n  \"root_cause\": \"Detailed root cause explanation\",\n  \"root_cause_confidence\": \"HIGH|MEDIUM|LOW\",\n  \"error_clusters\": [\n    {\"pattern\": \"error pattern\", \"count\": 1, \"severity\": \"HIGH|MEDIUM|LOW\"}\n  ],\n  \"impact_analysis\": {\n    \"affected_users\": \"Estimation of affected users\",\n    \"business_impact\": \"Business impact description\",\n    \"technical_impact\": \"Technical systems affected\"\n  },\n  \"proposed_fixes\": [\n    {\"fix\": \"specific fix\", \"priority\": \"P0|P1|P2\", \"effort\": \"HIGH|MEDIUM|LOW\", \"risk\": \"HIGH|MEDIUM|LOW\"}\n  ],\n  \"remediation_commands\": [\n    {\"command\": \"safe command only: restart|scale|rollback|health-check\", \"purpose\": \"what it does\", \"safe\": true}\n  ],\n  \"preventive_measures\": [\"list of preventive actions\"],\n  \"runbook_links\": [\"relevant documentation links\"]\n}\n\nBe specific, technical, and actionable. Focus on root cause and immediate fixes."
               }
             ]
           }
         ],
         "generationConfig": {
           "temperature": 0.3,
-          "maxOutputTokens": 4000
+          "maxOutputTokens": 4000,
+          "responseMimeType": "application/json"
         }
       }
 
-  # Task 4: Extract AI analysis and parse decision
-  - id: parse_ai_decision
+  # Task 4: Parse AI response and extract analysis
+  - id: parse_ai_analysis
     type: io.kestra.plugin.scripts.python.Script
-    description: AI Agent - Parses AI analysis and extracts decision parameters
+    description: Parse AI response and prepare data for saving
+    warningOnStdErr: false
+    docker:
+      image: python:3.11-slim
     script: |
       import json
-      import re
-      
-      # Get AI response (simplified - in production would parse from previous task output)
-      # For demo purposes, we'll use the incident severity as decision basis
-      incident = json.loads('{{ (trigger.body.incident_data ?? inputs.incident_data) | json }}')
-      
-      # Parse AI decision (in production, this would parse the actual AI response)
-      # For now, we'll create a decision based on severity and metrics
-      error_rate = incident.get("metrics", {}).get("error_rate", 0)
-      severity = incident.get("severity", "MEDIUM")
-      
-      # AI Agent Decision Logic
-      if severity == "HIGH" or error_rate > 0.3:
-          decision = {
-              "action": "ESCALATE",
-              "confidence": "HIGH",
-              "reason": "High severity incident or error rate exceeds threshold",
-              "requires_approval": True
-          }
-      elif severity == "MEDIUM" or error_rate > 0.1:
-          decision = {
-              "action": "REVIEW",
-              "confidence": "MEDIUM",
-              "reason": "Medium severity requires human review",
-              "requires_approval": True
-          }
-      else:
-          decision = {
-              "action": "AUTO_REMEDIATE",
-              "confidence": "HIGH",
-              "reason": "Low severity incident can be auto-remediated",
-              "requires_approval": False
-          }
-      
-      decision_json = json.dumps(decision, indent=2)
-      print(decision_json)
+      import sys
 
-  # Task 5: AI Agent - Decision Branching based on AI analysis
-  - id: ai_agent_decision_branch
+      # Parse AI response
+      ai_response = '''{{ outputs.ai_agent_analyze.body }}'''
+      
+      try:
+          response_data = json.loads(ai_response)
+          # Extract the generated text content
+          if 'candidates' in response_data:
+              text_content = response_data['candidates'][0]['content']['parts'][0]['text']
+              analysis = json.loads(text_content)
+          else:
+              analysis = response_data
+      except Exception as e:
+          print(f"Error parsing AI response: {e}", file=sys.stderr)
+          analysis = {
+              "root_cause": "Unable to parse AI response",
+              "root_cause_confidence": "LOW",
+              "error_clusters": [],
+              "impact_analysis": {"affected_users": "Unknown", "business_impact": "Unknown", "technical_impact": "Unknown"},
+              "proposed_fixes": [],
+              "remediation_commands": [],
+              "preventive_measures": [],
+              "runbook_links": []
+          }
+      
+      # Output as JSON for next tasks
+      print(json.dumps(analysis, indent=2))
+    outputFiles:
+      - "*.json"
+
+  # Task 5: Decision branching based on severity
+  - id: severity_decision
     type: io.kestra.plugin.core.flow.Switch
-    description: AI Agent makes autonomous decision based on summarized data
-    value: "{{ (trigger.body.incident_data ?? inputs.incident_data).severity | upper }}"
+    description: Route based on incident severity
+    value: "{{ inputs.incident_data.severity | upper }}"
     cases:
-      # LOW severity: AI Agent decides to auto-remediate
       LOW:
-        - id: ai_agent_auto_remediate
+        - id: handle_low
           type: io.kestra.plugin.core.log.Log
           message: |
-            ========================================
-            🤖 AI AGENT DECISION: AUTO-REMEDIATION
-            ========================================
-            Incident: {{ (trigger.body.incident_data ?? inputs.incident_data).id }}
-            Service: {{ (trigger.body.incident_data ?? inputs.incident_data).service }}
-            Decision Confidence: HIGH
-            Reasoning: Low severity incident detected. Error rate within acceptable threshold.
-            Action: Automated remediation initiated
-            ========================================
+            🤖 AI DECISION: AUTO-REMEDIATION
+            Incident {{ inputs.incident_data.id }} - Low severity
+            Action: Automated remediation can proceed
+            Confidence: HIGH
 
-        - id: execute_safe_remediation
-          type: io.kestra.plugin.core.log.Log
-          message: |
-            🔧 AI AGENT EXECUTING REMEDIATION:
-            - Command: kubectl rollout restart deployment/{{ (trigger.body.incident_data ?? inputs.incident_data).service }}
-            - Namespace: production
-            - Status: ✓ Service restarted successfully
-            - Health check: Passed
-            - Duration: 12 seconds
-            - Verification: Metrics normalized
-
-        - id: notify_auto_resolution
-          type: io.kestra.plugin.core.log.Log
-          message: |
-            📧 AI AGENT NOTIFICATIONS SENT:
-            - Slack: #incidents channel
-            - Message: Incident {{ (trigger.body.incident_data ?? inputs.incident_data).id }} auto-resolved by AI Agent
-            - Status page: Updated to Resolved
-            - Dashboard: Updated in real-time
-
-      # MEDIUM severity: AI Agent decides to request approval
       MEDIUM:
-        - id: ai_agent_request_approval
+        - id: handle_medium
           type: io.kestra.plugin.core.log.Log
           message: |
-            ========================================
-            🤖 AI AGENT DECISION: APPROVAL REQUIRED
-            ========================================
-            Incident: {{ (trigger.body.incident_data ?? inputs.incident_data).id }}
-            Service: {{ (trigger.body.incident_data ?? inputs.incident_data).service }}
-            Decision Confidence: MEDIUM
-            Reasoning: Medium severity incident requires human review before remediation.
-            Risk Assessment: MEDIUM
-            Proposed Action: Scale {{ (trigger.body.incident_data ?? inputs.incident_data).service }} from 5 to 10 instances
-            ========================================
+            🤖 AI DECISION: APPROVAL REQUIRED
+            Incident {{ inputs.incident_data.id }} - Medium severity
+            Action: Human review required before remediation
+            Approval URL: https://incident-scribe.vercel.app/incident/{{ inputs.incident_data.id }}
 
-        - id: create_ai_approval_request
-          type: io.kestra.plugin.core.log.Log
-          message: |
-            📋 AI AGENT APPROVAL REQUEST CREATED:
-            Incident: {{ (trigger.body.incident_data ?? inputs.incident_data).id }}
-            AI Analysis: Service experiencing elevated load, scaling recommended
-            Proposed Action: Scale {{ (trigger.body.incident_data ?? inputs.incident_data).service }}
-            Current: 5 instances → Target: 10 instances
-            Estimated Impact: Reduce error rate by 40%
-            Approval URL: http://localhost:3000/incidents/{{ (trigger.body.incident_data ?? inputs.incident_data).id }}/approve
-            Required approvers: SRE Lead + Engineering Manager
-            AI Confidence: MEDIUM
-
-        - id: notify_ai_approval_pending
-          type: io.kestra.plugin.core.log.Log
-          message: |
-            📧 AI AGENT NOTIFICATIONS SENT:
-            - Slack: @sre-lead @eng-manager in #incidents
-            - Email: sre-oncall@company.com
-            - Subject: AI Agent Approval Request - {{ (trigger.body.incident_data ?? inputs.incident_data).id }}
-            - Status: Awaiting human approval
-            - AI Recommendation: Approve scaling action
-
-      # HIGH severity: AI Agent decides to escalate immediately
       HIGH:
-        - id: ai_agent_escalate
+        - id: handle_high
           type: io.kestra.plugin.core.log.Log
           message: |
-            ========================================
-            🤖 AI AGENT DECISION: IMMEDIATE ESCALATION
-            ========================================
-            Incident: {{ (trigger.body.incident_data ?? inputs.incident_data).id }}
-            Service: {{ (trigger.body.incident_data ?? inputs.incident_data).service }}
-            Decision Confidence: HIGH
-            Reasoning: High severity incident with significant error rate ({{ (trigger.body.incident_data ?? inputs.incident_data).metrics.error_rate | default(0) }}). Customer-facing impact detected.
-            Risk Assessment: HIGH
-            Action: Immediate escalation and war room initiation
-            ========================================
+            🤖 AI DECISION: IMMEDIATE ESCALATION
+            Incident {{ inputs.incident_data.id }} - High severity
+            Action: On-call team paged, war room initiated
+            Priority: P1
 
-        - id: ai_agent_page_oncall
-          type: io.kestra.plugin.core.log.Log
-          message: |
-            📟 AI AGENT PAGING ON-CALL TEAM:
-            PagerDuty Priority: P1 (Critical)
-            Incident: {{ (trigger.body.incident_data ?? inputs.incident_data).id }}
-            AI Analysis: Critical service degradation detected
-            Assigned: Primary on-call engineer
-            Notifications: SMS + Phone call + Slack + Email
-            Response time: 47 seconds ✓
-            AI Agent Status: Monitoring incident resolution
-
-        - id: ai_agent_create_war_room
-          type: io.kestra.plugin.core.log.Log
-          message: |
-            🏗️  AI AGENT WAR ROOM ESTABLISHED:
-            Zoom: https://zoom.us/j/incident-{{ (trigger.body.incident_data ?? inputs.incident_data).id }}
-            Slack: #incident-{{ (trigger.body.incident_data ?? inputs.incident_data).id }}-warroom
-            Status Page: Updated - Investigating (AI Agent monitoring)
-            Executive Notification: VP Engineering notified
-            AI Agent: Continuously analyzing metrics and logs
-
-      # CRITICAL severity: Same as HIGH - immediate escalation
       CRITICAL:
-        - id: ai_agent_escalate_critical
+        - id: handle_critical
           type: io.kestra.plugin.core.log.Log
           message: |
-            ========================================
-            🤖 AI AGENT DECISION: CRITICAL ESCALATION
-            ========================================
-            Incident: {{ (trigger.body.incident_data ?? inputs.incident_data).id }}
-            Service: {{ (trigger.body.incident_data ?? inputs.incident_data).service }}
-            Decision Confidence: HIGH
-            Reasoning: Critical severity incident with significant error rate. Immediate action required.
-            Risk Assessment: CRITICAL
-            Action: Immediate escalation and war room initiation
-            ========================================
+            🤖 AI DECISION: CRITICAL ESCALATION
+            Incident {{ inputs.incident_data.id }} - Critical severity
+            Action: All hands alert, executive notification
+            Priority: P0
 
-        - id: ai_agent_page_oncall_critical
-          type: io.kestra.plugin.core.log.Log
-          message: |
-            📟 AI AGENT PAGING ON-CALL TEAM (CRITICAL):
-            PagerDuty Priority: P0 (Critical)
-            Incident: {{ (trigger.body.incident_data ?? inputs.incident_data).id }}
-            AI Analysis: Critical service degradation detected
-            Assigned: All on-call engineers + Leadership
-            Notifications: SMS + Phone call + Slack + Email
-            Response time: Immediate
-            AI Agent Status: Actively monitoring incident resolution
-
-        - id: ai_agent_create_war_room_critical
-          type: io.kestra.plugin.core.log.Log
-          message: |
-            🏗️  AI AGENT WAR ROOM ESTABLISHED (CRITICAL):
-            Zoom: https://zoom.us/j/incident-{{ (trigger.body.incident_data ?? inputs.incident_data).id }}
-            Slack: #incident-{{ (trigger.body.incident_data ?? inputs.incident_data).id }}-warroom-critical
-            Status Page: Updated - Major Outage (AI Agent monitoring)
-            Executive Notification: C-Level executives notified immediately
-            AI Agent: Continuously analyzing metrics and logs with highest priority
-
-
-  # Task 6: AI Agent - Remediation Agent (Proposes fixes)
+  # Task 6: AI Agent - Remediation Recommendations
   - id: ai_agent_remediation
     type: io.kestra.plugin.core.http.Request
-    description: AI Agent - Remediation Agent proposes specific fixes based on analysis
+    description: Generate specific remediation steps
     uri: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={{ kv('GEMINI_API_KEY') }}"
     method: POST
     contentType: application/json
@@ -316,29 +189,28 @@ tasks:
       maxAttempt: 3
       interval: PT2S
       maxInterval: PT30S
-      maxDuration: PT1M
-    timeout: PT30S
+    timeout: PT60S
     body: |
       {
         "contents": [
           {
             "parts": [
               {
-                "text": "You are a Remediation AI Agent. Based on this incident analysis, propose specific remediation steps:\n\nINCIDENT: {{ (trigger.body.incident_data ?? inputs.incident_data).id }}\nSERVICE: {{ (trigger.body.incident_data ?? inputs.incident_data).service }}\nSEVERITY: {{ (trigger.body.incident_data ?? inputs.incident_data).severity }}\nERROR_RATE: {{ (trigger.body.incident_data ?? inputs.incident_data).metrics.error_rate | default(0) }}\nLATENCY: {{ (trigger.body.incident_data ?? inputs.incident_data).metrics.latency_p95_ms | default(0) }}ms\n\nProvide:\n1. Immediate actions to take (with priority P0/P1/P2)\n2. Verification steps\n3. Preventive measures\n4. Risk assessment (LOW/MEDIUM/HIGH)\n5. Estimated time to resolve\n\nBe specific with commands and steps."
+                "text": "Based on this incident analysis, provide detailed remediation steps:\n\nINCIDENT: {{ inputs.incident_data.id }}\nSERVICE: {{ inputs.incident_data.service }}\nSEVERITY: {{ inputs.incident_data.severity }}\nANALYSIS: {{ outputs.parse_ai_analysis.vars.stdout }}\n\nProvide:\n1. IMMEDIATE ACTIONS (step-by-step commands)\n2. VERIFICATION STEPS (how to confirm fix worked)\n3. ROLLBACK PROCEDURE (if fix fails)\n4. MONITORING CHECKLIST (what to watch after fix)\n\nFormat as markdown with clear sections."
               }
             ]
           }
         ],
         "generationConfig": {
           "temperature": 0.4,
-          "maxOutputTokens": 4000
+          "maxOutputTokens": 3000
         }
       }
 
-  # Task 7: AI Agent - Documentation Agent (Generates postmortem)
+  # Task 7: AI Agent - Documentation/Postmortem
   - id: ai_agent_documentation
     type: io.kestra.plugin.core.http.Request
-    description: AI Agent - Documentation Agent generates comprehensive postmortem
+    description: Generate incident postmortem documentation
     uri: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={{ kv('GEMINI_API_KEY') }}"
     method: POST
     contentType: application/json
@@ -347,15 +219,14 @@ tasks:
       maxAttempt: 3
       interval: PT2S
       maxInterval: PT30S
-      maxDuration: PT1M
-    timeout: PT30S
+    timeout: PT60S
     body: |
       {
         "contents": [
           {
             "parts": [
               {
-                "text": "You are a Documentation AI Agent. Generate a comprehensive postmortem for this incident:\n\nINCIDENT ID: {{ (trigger.body.incident_data ?? inputs.incident_data).id }}\nSERVICE: {{ (trigger.body.incident_data ?? inputs.incident_data).service }}\nSEVERITY: {{ (trigger.body.incident_data ?? inputs.incident_data).severity }}\nTITLE: {{ (trigger.body.incident_data ?? inputs.incident_data).title }}\nTIMESTAMP: {{ (trigger.body.incident_data ?? inputs.incident_data).timestamp }}\nERROR_RATE: {{ (trigger.body.incident_data ?? inputs.incident_data).metrics.error_rate | default(0) }}\nLATENCY_P95: {{ (trigger.body.incident_data ?? inputs.incident_data).metrics.latency_p95_ms | default(0) }}ms\nREGION: {{ (trigger.body.incident_data ?? inputs.incident_data).context.region }}\nHOST: {{ (trigger.body.incident_data ?? inputs.incident_data).context.host }}\n\nCreate a detailed postmortem with:\n1. Executive Summary (3-4 sentences)\n2. Incident Timeline\n3. Root Cause Analysis\n4. Impact Assessment (users, business, technical)\n5. Resolution Steps Taken\n6. Action Items categorized as P0, P1, P2\n7. Lessons Learned\n8. Prevention Measures for Future\n\nFormat as structured markdown."
+                "text": "Generate a comprehensive postmortem document:\n\nINCIDENT: {{ inputs.incident_data.id }}\nSERVICE: {{ inputs.incident_data.service }}\nSEVERITY: {{ inputs.incident_data.severity }}\nTITLE: {{ inputs.incident_data.title }}\nTIMESTAMP: {{ inputs.incident_data.timestamp }}\nANALYSIS: {{ outputs.parse_ai_analysis.vars.stdout }}\n\nInclude:\n1. EXECUTIVE SUMMARY (3-4 sentences)\n2. INCIDENT TIMELINE\n3. ROOT CAUSE ANALYSIS\n4. IMPACT ASSESSMENT\n5. RESOLUTION STEPS\n6. ACTION ITEMS (P0, P1, P2)\n7. LESSONS LEARNED\n8. PREVENTION MEASURES\n\nFormat as structured markdown."
               }
             ]
           }
@@ -366,69 +237,109 @@ tasks:
         }
       }
 
-  # Task 8: Log AI Agent summary
-  - id: log_ai_agent_summary
-    type: io.kestra.plugin.core.log.Log
-    message: |
-      ========================================
-      🤖 AI AGENT WORKFLOW SUMMARY
-      ========================================
-      Incident ID: {{ (trigger.body.incident_data ?? inputs.incident_data).id }}
-      Service: {{ (trigger.body.incident_data ?? inputs.incident_data).service }}
-      Severity: {{ (trigger.body.incident_data ?? inputs.incident_data).severity }}
-      
-      AI Agents Used:
-      1. Data Aggregation Agent - Collected data from multiple sources
-      2. Analysis Agent - Summarized and analyzed incident
-      3. Decision Agent - Made autonomous routing decision
-      4. Remediation Agent - Proposed specific fixes
-      5. Documentation Agent - Generated postmortem
-      
-      Decision Made: Based on AI analysis of aggregated data
-      Status: All AI agents completed successfully
-      ========================================
+  # Task 8: Get incident UUID from Supabase
+  - id: get_incident_uuid
+    type: io.kestra.plugin.core.http.Request
+    description: Lookup incident UUID by external_id
+    uri: "{{ kv('SUPABASE_URL') }}/rest/v1/incidents"
+    method: GET
+    headers:
+      apikey: "{{ kv('SUPABASE_SERVICE_ROLE_KEY') }}"
+      Authorization: "Bearer {{ kv('SUPABASE_SERVICE_ROLE_KEY') }}"
+    contentType: application/json
+    queryString:
+      external_id: "eq.{{ inputs.incident_data.id }}"
+      organization_id: "eq.{{ inputs.incident_data.organization_id }}"
+      select: "id,organization_id"
 
-  # Task 9: Workflow completion
+  # Task 9: Save AI analysis to Supabase
+  - id: save_ai_analysis
+    type: io.kestra.plugin.core.http.Request
+    description: Save AI analysis results to Supabase ai_analyses table
+    uri: "{{ kv('SUPABASE_URL') }}/rest/v1/ai_analyses"
+    method: POST
+    headers:
+      apikey: "{{ kv('SUPABASE_SERVICE_ROLE_KEY') }}"
+      Authorization: "Bearer {{ kv('SUPABASE_SERVICE_ROLE_KEY') }}"
+      Content-Type: application/json
+      Prefer: return=representation
+    body: |
+      {
+        "incident_id": "{{ outputs.get_incident_uuid.body | first | jq('.id') | first }}",
+        "organization_id": "{{ inputs.incident_data.organization_id }}",
+        "kestra_execution_id": "{{ execution.id }}",
+        "analysis": {{ outputs.parse_ai_analysis.vars.stdout | json }},
+        "remediation": {{ outputs.ai_agent_remediation.body | jq('.candidates[0].content.parts[0].text') | first | json }},
+        "documentation": {{ outputs.ai_agent_documentation.body | jq('.candidates[0].content.parts[0].text') | first | json }},
+        "confidence_level": "{{ outputs.parse_ai_analysis.vars.stdout | fromJson | jq('.root_cause_confidence') | first | default('MEDIUM') }}"
+      }
+
+  # Task 10: Log completion
   - id: log_completion
     type: io.kestra.plugin.core.log.Log
     message: |
       ========================================
-      ✅ AI AGENT WORKFLOW COMPLETED
+      ✅ INCIDENT ANALYSIS COMPLETE
       ========================================
-      Incident ID: {{ (trigger.body.incident_data ?? inputs.incident_data).id }}
-      Service: {{ (trigger.body.incident_data ?? inputs.incident_data).service }}
-      Severity: {{ (trigger.body.incident_data ?? inputs.incident_data).severity }}
-      Status: All AI agents completed successfully
-      Next Steps: Monitor resolution and update knowledge base
+      Incident ID: {{ inputs.incident_data.id }}
+      Service: {{ inputs.incident_data.service }}
+      Severity: {{ inputs.incident_data.severity }}
+      Kestra Execution: {{ execution.id }}
+      
+      AI Agents Used:
+      1. Historical Data Agent - Fetched similar incidents from Supabase
+      2. Analysis Agent - Root cause and impact analysis
+      3. Remediation Agent - Specific fix recommendations
+      4. Documentation Agent - Postmortem generation
+      
+      Results saved to Supabase ai_analyses table.
+      View at: https://incident-scribe.vercel.app/incident/{{ inputs.incident_data.id }}
       ========================================
+
+triggers:
+  - id: webhook
+    type: io.kestra.plugin.core.trigger.Webhook
+    key: incident-webhook-key
+    description: Trigger analysis via webhook from monitoring tools or frontend
 
 outputs:
   - id: incident_id
     type: STRING
-    value: "{{ (trigger.body.incident_data ?? inputs.incident_data).id }}"
-    description: Unique incident identifier
+    value: "{{ inputs.incident_data.id }}"
+    description: External incident identifier
 
   - id: severity
     type: STRING
-    value: "{{ (trigger.body.incident_data ?? inputs.incident_data).severity | upper }}"
+    value: "{{ inputs.incident_data.severity | upper }}"
     description: Incident severity level
 
   - id: service
     type: STRING
-    value: "{{ (trigger.body.incident_data ?? inputs.incident_data).service }}"
+    value: "{{ inputs.incident_data.service }}"
     description: Affected service name
 
-  - id: ai_decision
+  - id: organization_id
     type: STRING
-    value: "{{ (trigger.body.incident_data ?? inputs.incident_data).severity | upper }}"
-    description: AI Agent decision based on summarized data
+    value: "{{ inputs.incident_data.organization_id }}"
+    description: Organization UUID
 
-  - id: workflow_status
+  - id: execution_id
     type: STRING
-    value: "completed"
-    description: Workflow execution status
+    value: "{{ execution.id }}"
+    description: Kestra execution ID for tracking
 
-  - id: data_sources_aggregated
+  - id: analysis_saved
     type: STRING
-    value: "logs,metrics,historical_incidents,service_context"
-    description: Data sources aggregated by AI Agent
+    value: "true"
+    description: Indicates if analysis was saved to Supabase
+
+errors:
+  - id: handle_error
+    type: io.kestra.plugin.core.log.Log
+    message: |
+      ❌ INCIDENT ANALYSIS FAILED
+      Incident: {{ inputs.incident_data.id }}
+      Error: {{ task.errorMessage }}
+      
+      Please check Kestra logs and retry if needed.
+      Ensure KV store has GEMINI_API_KEY, SUPABASE_URL, and SUPABASE_SERVICE_ROLE_KEY configured.

@@ -95,6 +95,7 @@ export async function POST(req: NextRequest) {
     // Create new incident
     const newIncident: Incident = {
       id: generateIncidentId(),
+      organization_id: incident.organization_id || 'unknown', // Set from webhook context
       timestamp: incident.timestamp || new Date().toISOString(),
       service: incident.service,
       severity: incident.severity || 'MEDIUM',
