@@ -1,11 +1,30 @@
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+  webhook_key: string;
+  settings?: Record<string, any>;
+}
+
 export interface Incident {
   id: string;
+  internal_id?: string;  // Database UUID
+  organization_id: string;
   timestamp: string;
   service: string;
-  severity: 'LOW' | 'MEDIUM' | 'HIGH';
-  status: 'open' | 'resolved' | 'investigating';
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  status: 'open' | 'resolved' | 'investigating' | 'closed';
   title: string;
+  description?: string;
   logs: string[];
+  ai_analysis?: {
+    analysis?: string;
+    remediation?: string;
+    documentation?: string;
+    confidence_level?: string;
+    kestra_execution_id?: string;
+    created_at?: string;
+  };
   metrics: {
     error_rate?: number;
     latency_p95_ms?: number;
@@ -27,12 +46,18 @@ export interface Incident {
     cache_hit_rate?: number;
     cache_size_mb?: number;
     eviction_count?: number;
+    uptime?: number;
+    memory_usage?: number;
+    active_connections?: number;
+    [key: string]: any;
   };
   context: {
-    host: string;
-    region: string;
-    version: string;
-    deployment: string;
+    host?: string;
+    region?: string;
+    version?: string;
+    deployment?: string;
+    client_id?: string;
+    [key: string]: any;
   };
 }
 
@@ -64,9 +89,13 @@ export interface IncidentAnalysis {
 }
 
 export interface KestraExecution {
-  id: string;
-  status: string;
+  id?: string;
+  executionId?: string;
+  success: boolean;
+  status?: string;
   startDate?: string;
   endDate?: string;
+  error?: string;
+  message?: string;
 }
 

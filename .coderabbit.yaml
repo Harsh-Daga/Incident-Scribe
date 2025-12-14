@@ -1,0 +1,129 @@
+# CodeRabbit Configuration
+# AI-powered code review for IncidentScribe
+
+# Review settings
+reviews:
+  # Enable automatic reviews on PRs
+  auto_review:
+    enabled: true
+    # Review drafts too
+    drafts: false
+    # Base branches to review
+    base_branches:
+      - main
+      - develop
+
+  # Review profile - thorough for this project
+  profile: "assertive"
+
+  # Request changes for critical issues
+  request_changes_workflow: true
+
+  # High-level summary in PR comments
+  high_level_summary: true
+  high_level_summary_placeholder: "@coderabbitai summary"
+
+  # Poem in review (fun!)
+  poem: true
+
+  # Review status in PR
+  review_status: true
+
+  # Collapse walkthrough after certain lines
+  collapse_walkthrough: true
+
+  # Path-based instructions
+  path_instructions:
+    - path: "frontend/**/*.tsx"
+      instructions: |
+        Review React components for:
+        - Proper TypeScript types
+        - React hooks best practices
+        - Accessibility (a11y)
+        - Performance (memo, useCallback where needed)
+        - Consistent styling with Tailwind CSS
+
+    - path: "frontend/app/api/**/*.ts"
+      instructions: |
+        Review API routes for:
+        - Proper error handling
+        - Authentication checks
+        - Input validation
+        - Supabase RLS compliance
+        - Rate limiting consideration
+
+    - path: "frontend/lib/**/*.ts"
+      instructions: |
+        Review library code for:
+        - Type safety
+        - Error handling
+        - Reusability
+        - Clear function signatures
+
+    - path: "kestra/**/*.yml"
+      instructions: |
+        Review Kestra workflows for:
+        - Valid YAML syntax
+        - Proper task sequencing
+        - Error handling with retries
+        - Secret management (KV store usage)
+        - AI prompt quality
+
+    - path: "database/**/*.sql"
+      instructions: |
+        Review SQL for:
+        - Proper RLS policies
+        - Index usage
+        - SQL injection prevention
+        - Data integrity constraints
+        - Migration safety
+
+    - path: "cli/**/*.js"
+      instructions: |
+        Review CLI code for:
+        - Command structure
+        - Error messages
+        - Guardrails for destructive operations
+        - User experience
+  
+  # Files to ignore
+  path_filters:
+    # Ignore generated files
+    - "!**/*.lock"
+    - "!**/node_modules/**"
+    - "!**/.next/**"
+    - "!**/dist/**"
+    
+    # Ignore config files (usually boilerplate)
+    - "!**/tsconfig.json"
+    - "!**/next.config.ts"
+    - "!**/postcss.config.mjs"
+    - "!**/eslint.config.mjs"
+
+# Chat settings
+chat:
+  # Enable chat in PR comments
+  auto_reply: true
+
+# Language settings
+language: "en-US"
+
+# Tone settings
+tone_instructions: |
+  Be constructive and helpful. Focus on:
+  - Security issues (especially auth/RLS)
+  - Performance implications
+  - Code maintainability
+  - TypeScript best practices
+  
+  This is a hackathon project, so be pragmatic about 
+  suggestions vs blocking issues.
+
+# Early access features
+early_access: true
+
+# Knowledge base - learn from the codebase
+knowledge_base:
+  opt_out: false
+  learnings:
+    scope: "auto"

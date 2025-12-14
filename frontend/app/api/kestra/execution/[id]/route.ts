@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
+import { getConfig } from '@/lib/system-config';
 
 export async function GET(
   req: NextRequest,
@@ -7,7 +8,12 @@ export async function GET(
 ) {
   try {
     const { id: executionId } = await params;
-    const kestraUrl = process.env.KESTRA_URL || 'http://localhost:8080';
+    
+    // Get Kestra config from system config (with env fallback)
+    const kestraUrl = await getConfig('KESTRA_URL') || 'http://localhost:8080';
+    const kestraUsername = await getConfig('KESTRA_USERNAME');
+    const kestraPassword = await getConfig('KESTRA_PASSWORD');
+    
     const tenant = 'main';
 
     // Use simple execution ID endpoint (works with any flow)
@@ -15,18 +21,14 @@ export async function GET(
 
     console.log('Fetching execution status:', { url, executionId });
 
-    // Basic auth credentials for Kestra - MUST be set in environment
-    if (!process.env.KESTRA_USERNAME || !process.env.KESTRA_PASSWORD) {
-      throw new Error('KESTRA_USERNAME and KESTRA_PASSWORD must be set in environment variables');
-    }
-
-    const auth = {
-      username: process.env.KESTRA_USERNAME,
-      password: process.env.KESTRA_PASSWORD
-    };
+    // Build auth if credentials are provided
+    const auth = kestraUsername && kestraPassword ? {
+      username: kestraUsername,
+      password: kestraPassword
+    } : undefined;
 
     const response = await axios.get(url, {
-      auth: auth,
+      ...(auth && { auth }),
       timeout: 5000
     });
 
@@ -64,8 +66,8 @@ export async function GET(
       return match ? parseFloat(match[1]) : null;
     };
 
-    // Construct proper Kestra UI URL
-    const kestraUiUrl = `http://localhost:8080/ui/${tenant}/executions/${execution.namespace}/${execution.flowId}/${execution.id}`;
+    // Construct proper Kestra UI URL using the same base URL
+    const kestraUiUrl = `${kestraUrl}/ui/${tenant}/executions/${execution.namespace}/${execution.flowId}/${execution.id}`;
 
     return NextResponse.json({
       executionId: execution.id,
@@ -86,13 +88,16 @@ export async function GET(
     console.error('Error fetching execution:', error.message, error.response?.status);
 
     const is401 = error.response?.status === 401;
+    
+    // Try to get kestraUrl for error response
+    const fallbackKestraUrl = await getConfig('KESTRA_URL') || 'http://localhost:8080';
 
     return NextResponse.json({
       error: is401
         ? 'Kestra authentication required'
         : 'Failed to fetch execution status',
       details: is401
-        ? 'Please view execution details in Kestra UI at http://localhost:8080'
+        ? `Please view execution details in Kestra UI at ${fallbackKestraUrl}`
         : error.message,
       executionId: executionId,
       status: 'PENDING',
@@ -101,7 +106,7 @@ export async function GET(
         remediation: null,
         documentation: null
       },
-      url: `http://localhost:8080/ui/executions/${executionId}`
+      url: `${fallbackKestraUrl}/ui/executions/${executionId}`
     }, { status: is401 ? 200 : (error.response?.status || 500) });
   }
 }

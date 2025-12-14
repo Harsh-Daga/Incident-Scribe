@@ -40,7 +40,8 @@ export async function sendSlackNotification(message: SlackMessage): Promise<bool
  * Format an incident as a Slack message with rich blocks
  */
 export function formatIncidentMessage(incident: Incident, type: 'created' | 'resolved' | 'escalated'): SlackMessage {
-  const severityEmoji = {
+  const severityEmoji: Record<string, string> = {
+    CRITICAL: ':black_circle:',
     HIGH: ':red_circle:',
     MEDIUM: ':orange_circle:',
     LOW: ':yellow_circle:'
@@ -58,7 +59,8 @@ export function formatIncidentMessage(incident: Incident, type: 'created' | 'res
     escalated: 'Incident Escalated'
   };
 
-  const severityColor = {
+  const severityColor: Record<string, string> = {
+    CRITICAL: '#7f1d1d',
     HIGH: '#dc2626',
     MEDIUM: '#f59e0b',
     LOW: '#10b981'

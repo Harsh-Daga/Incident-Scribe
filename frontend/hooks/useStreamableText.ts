@@ -11,10 +11,11 @@ export function useStreamableText(stream: ReadableStream<Uint8Array> | null) {
     }
 
     let cancelled = false;
+    const currentStream = stream;
 
     async function readStream() {
       try {
-        const reader = stream.getReader();
+        const reader = currentStream.getReader();
         const decoder = new TextDecoder();
 
         while (!cancelled) {

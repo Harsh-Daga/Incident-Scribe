@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Incident } from '@/types/incident';
 import { getIncident, triggerKestraWorkflow } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
+import { createClient } from '@/lib/supabase/client';
 import {
   ArrowLeft,
   Loader2,
@@ -23,33 +24,61 @@ import {
   AlertTriangle,
   Play
 } from 'lucide-react';
+import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 
 export default function IncidentDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const supabase = createClient();
   const incidentId = (params?.id || '') as string;
 
   const [incident, setIncident] = useState<Incident | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
   const [triggeringKestra, setTriggeringKestra] = useState(false);
   const [kestraExecutionId, setKestraExecutionId] = useState<string | null>(null);
   const [kestraStatus, setKestraStatus] = useState<any>(null);
   const [pollingExecution, setPollingExecution] = useState(false);
 
+  // Check authentication first
   useEffect(() => {
+    async function checkAuth() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/login');
+        return;
+      }
+      setAuthChecked(true);
+    }
+    checkAuth();
+  }, [supabase, router]);
+
+  useEffect(() => {
+    if (!authChecked) return;
+
     async function loadIncident() {
       try {
         const data = await getIncident(incidentId);
+        if (!data) {
+          router.push('/dashboard');
+          return;
+        }
         setIncident(data);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error loading incident:', error);
+        // Handle 401 - redirect to login
+        if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+          router.push('/login');
+          return;
+        }
+        router.push('/dashboard');
       } finally {
         setLoading(false);
       }
     }
 
     loadIncident();
-  }, [incidentId]);
+  }, [incidentId, authChecked, router]);
 
   const handleTriggerKestra = async () => {
     if (!incident) return;
@@ -57,7 +86,7 @@ export default function IncidentDetailPage() {
     setTriggeringKestra(true);
     try {
       const result = await triggerKestraWorkflow(incident);
-      setKestraExecutionId(result.executionId);
+      setKestraExecutionId(result.executionId || result.id || null);
       setPollingExecution(true);
     } catch (error) {
       console.error('Error triggering Kestra:', error);
@@ -66,7 +95,7 @@ export default function IncidentDetailPage() {
     }
   };
 
-  // Poll for execution status
+  // Poll for execution status and save results when complete
   useEffect(() => {
     if (!kestraExecutionId || !pollingExecution) return;
 
@@ -78,6 +107,31 @@ export default function IncidentDetailPage() {
 
         if (data.status === 'SUCCESS' || data.status === 'FAILED' || data.status === 'KILLED') {
           setPollingExecution(false);
+          
+          // Save results to database when Kestra completes successfully
+          if (data.status === 'SUCCESS' && data.aiResults && incident) {
+            try {
+              await fetch('/api/analysis/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  incidentId: incident.internal_id || incident.id,
+                  executionId: kestraExecutionId,
+                  analysis: data.aiResults.analysis,
+                  remediation: data.aiResults.remediation,
+                  documentation: data.aiResults.documentation,
+                })
+              });
+              
+              // Reload incident data to get persisted analysis
+              const updatedData = await getIncident(incidentId);
+              if (updatedData) {
+                setIncident(updatedData);
+              }
+            } catch (saveError) {
+              console.error('Error saving analysis:', saveError);
+            }
+          }
         }
       } catch (error) {
         console.error('Error polling execution:', error);
@@ -85,7 +139,7 @@ export default function IncidentDetailPage() {
     }, 2000);
 
     return () => clearInterval(pollInterval);
-  }, [kestraExecutionId, pollingExecution]);
+  }, [kestraExecutionId, pollingExecution, incident, incidentId]);
 
   // Parse AI analysis from Gemini response format
   const parseAIAnalysis = (analysis: any): string | null => {
@@ -119,7 +173,7 @@ export default function IncidentDetailPage() {
             INCIDENT NOT FOUND
           </h2>
           <button
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/dashboard')}
             className="btn-primary mt-4"
           >
             RETURN TO DASHBOARD
@@ -129,17 +183,19 @@ export default function IncidentDetailPage() {
     );
   }
 
-  const aiAnalysisText = kestraStatus?.aiResults?.analysis
-    ? parseAIAnalysis(kestraStatus.aiResults.analysis)
-    : null;
+  // Check saved analysis first, then fall back to live Kestra results
+  const savedAnalysis = (incident as any)?.ai_analysis;
+  
+  const aiAnalysisText = savedAnalysis?.analysis 
+    || (kestraStatus?.aiResults?.analysis ? parseAIAnalysis(kestraStatus.aiResults.analysis) : null);
 
-  const aiRemediationText = kestraStatus?.aiResults?.remediation
-    ? parseAIAnalysis(kestraStatus.aiResults.remediation)
-    : null;
+  const aiRemediationText = savedAnalysis?.remediation
+    || (kestraStatus?.aiResults?.remediation ? parseAIAnalysis(kestraStatus.aiResults.remediation) : null);
 
-  const aiDocumentationText = kestraStatus?.aiResults?.documentation
-    ? parseAIAnalysis(kestraStatus.aiResults.documentation)
-    : null;
+  const aiDocumentationText = savedAnalysis?.documentation
+    || (kestraStatus?.aiResults?.documentation ? parseAIAnalysis(kestraStatus.aiResults.documentation) : null);
+  
+  const hasAnyAnalysis = aiAnalysisText || aiRemediationText || aiDocumentationText;
 
   return (
     <div className="min-h-screen relative" style={{background: 'var(--bg-primary)'}}>
@@ -147,7 +203,7 @@ export default function IncidentDetailPage() {
       <div className="glass-card border-b" style={{borderColor: 'var(--glass-border)'}}>
         <div className="max-w-7xl mx-auto px-6 py-5">
           <button
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/dashboard')}
             className="flex items-center gap-2 mb-4 font-mono text-xs tracking-wider transition-all hover:gap-3"
             style={{color: 'var(--accent-cyan)'}}
           >
@@ -300,11 +356,7 @@ export default function IncidentDetailPage() {
                     AI ANALYSIS
                   </h2>
                 </div>
-                <div className="prose">
-                  <div style={{color: 'var(--text-secondary)'}} className="leading-relaxed">
-                    {aiAnalysisText}
-                  </div>
-                </div>
+                <MarkdownRenderer content={aiAnalysisText} />
               </div>
             )}
 
@@ -320,11 +372,7 @@ export default function IncidentDetailPage() {
                     REMEDIATION STEPS
                   </h2>
                 </div>
-                <div className="prose">
-                  <div style={{color: 'var(--text-secondary)'}} className="leading-relaxed">
-                    {aiRemediationText}
-                  </div>
-                </div>
+                <MarkdownRenderer content={aiRemediationText} />
               </div>
             )}
 
@@ -340,11 +388,7 @@ export default function IncidentDetailPage() {
                     POST-MORTEM DOCUMENTATION
                   </h2>
                 </div>
-                <div className="prose">
-                  <div style={{color: 'var(--text-secondary)'}} className="leading-relaxed">
-                    {aiDocumentationText}
-                  </div>
-                </div>
+                <MarkdownRenderer content={aiDocumentationText} />
               </div>
             )}
 

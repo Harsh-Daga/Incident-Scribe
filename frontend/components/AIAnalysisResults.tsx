@@ -268,7 +268,7 @@ export function AIAnalysisResults({ kestraStatus, incidentId }: AIAnalysisResult
             <p className="text-red-800">
               {kestraStatus.status === 'FAILED'
                 ? 'Please check the Kestra logs for more details or try triggering the workflow again.'
-                : 'Please ensure Kestra is running and accessible at http://localhost:8080'}
+                : 'Please ensure Kestra is running and accessible. Check your system configuration for the Kestra URL.'}
             </p>
             {kestraStatus.url && (
               <a

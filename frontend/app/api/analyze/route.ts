@@ -1,6 +1,8 @@
 import { streamText } from 'ai';
-import { google } from '@ai-sdk/google';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedOrganizationId } from '@/lib/supabase/server';
+import { getConfig } from '@/lib/system-config';
 
 // Use Node.js runtime for better compatibility with environment variables
 export const runtime = 'nodejs';
@@ -27,9 +29,18 @@ function rateLimit(identifier: string, maxRequests = 10, windowMs = 60000): bool
 
 export async function POST(req: NextRequest) {
   try {
-    // Rate limiting based on IP
-    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
-    if (!rateLimit(ip, 10, 60000)) {
+    // SECURITY: Verify user is authenticated
+    const organizationId = await getAuthenticatedOrganizationId();
+    
+    if (!organizationId) {
+      return NextResponse.json(
+        { error: 'Unauthorized - please log in' },
+        { status: 401 }
+      );
+    }
+
+    // Rate limiting based on organization
+    if (!rateLimit(organizationId, 20, 60000)) {
       return NextResponse.json(
         { error: 'Rate limit exceeded. Please try again in a minute.' },
         { status: 429 }
@@ -42,20 +53,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Incident data required' }, { status: 400 });
     }
 
-    // Get API key from environment
-    const apiKey = process.env.GEMINI_API_KEY;
+    // Get API key from system config (with env fallback)
+    const apiKey = await getConfig('GEMINI_API_KEY');
     if (!apiKey) {
-      console.error('GEMINI_API_KEY not found in environment variables');
+      console.error('GEMINI_API_KEY not found in system config or environment variables');
       return NextResponse.json(
-        { error: 'GEMINI_API_KEY not configured. Please set it in .env.local' },
+        { error: 'GEMINI_API_KEY not configured. Please set it in system configuration or .env.local' },
         { status: 500 }
       );
     }
 
     // Validate incident data
-    if (!incident.id || !incident.service || !incident.logs) {
+    if (!incident.id || !incident.service) {
       return NextResponse.json(
-        { error: 'Invalid incident data. Missing required fields.' },
+        { error: 'Invalid incident data. Missing required fields: id, service' },
         { status: 400 }
       );
     }
@@ -69,7 +80,7 @@ SEVERITY: ${incident.severity || 'UNKNOWN'}
 TITLE: ${incident.title || 'Untitled Incident'}
 
 ERROR LOGS:
-${Array.isArray(incident.logs) ? incident.logs.join('\n') : JSON.stringify(incident.logs)}
+${Array.isArray(incident.logs) ? incident.logs.join('\n') : JSON.stringify(incident.logs || [])}
 
 METRICS:
 ${JSON.stringify(incident.metrics || {}, null, 2)}
@@ -87,14 +98,15 @@ Provide a detailed analysis covering:
 
 Be specific, technical, and actionable. Format your response clearly with headers.`;
 
+    // Create Google AI provider with API key
+    const google = createGoogleGenerativeAI({
+      apiKey,
+    });
+
     // Stream the response using Vercel AI SDK
     const result = await streamText({
-      model: google('gemini-2.5-flash', {
-        apiKey,
-      }),
+      model: google('gemini-2.5-flash'),
       prompt,
-      temperature: 0.3,
-      maxTokens: 2000,
     });
 
     // streamText returns helpers; use toTextStreamResponse for streaming
@@ -103,7 +115,7 @@ Be specific, technical, and actionable. Format your response clearly with header
     }
 
     // Fallback: return plain text response
-    const text = await result.text();
+    const text = await result.text;
     return new NextResponse(text, {
       status: 200,
       headers: {
@@ -112,11 +124,6 @@ Be specific, technical, and actionable. Format your response clearly with header
     });
   } catch (error: any) {
     console.error('Error in analyze route:', error);
-    console.error('Error details:', {
-      message: error.message,
-      stack: error.stack,
-      name: error.name,
-    });
     
     // Return detailed error in development
     const errorMessage = process.env.NODE_ENV === 'development'
@@ -124,7 +131,7 @@ Be specific, technical, and actionable. Format your response clearly with header
       : 'Internal server error. Please check server logs.';
     
     return NextResponse.json(
-      { error: errorMessage, details: process.env.NODE_ENV === 'development' ? error.stack : undefined },
+      { error: errorMessage },
       { status: 500 }
     );
   }
