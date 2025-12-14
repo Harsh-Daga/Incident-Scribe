@@ -1,0 +1,162 @@
+[
+  {
+    "id": "INC-006",
+    "timestamp": "2025-12-13T15:13:35.873Z",
+    "service": "payment-api",
+    "severity": "HIGH",
+    "status": "open",
+    "title": "Database Connection Timeout - Critical",
+    "logs": [
+      "2025-12-13 15:00:01 ERROR Connection pool exhausted",
+      "2025-12-13 15:00:02 ERROR Database timeout after 30s",
+      "2025-12-13 15:00:03 ERROR Failed to acquire connection",
+      "2025-12-13 15:00:04 WARN Retry attempt 1 failed",
+      "2025-12-13 15:00:05 ERROR Maximum retry attempts reached"
+    ],
+    "metrics": {
+      "error_rate": 0.45,
+      "latency_p95_ms": 8500,
+      "active_connections": 50,
+      "connection_pool_size": 20
+    },
+    "context": {
+      "host": "payment-api-prod-3",
+      "region": "us-east-1",
+      "version": "v2.3.1",
+      "deployment": "production"
+    }
+  },
+  {
+    "id": "INC-001",
+    "timestamp": "2025-01-12T14:32:00Z",
+    "service": "payment-api",
+    "severity": "HIGH",
+    "status": "open",
+    "title": "Database Connection Timeout",
+    "logs": [
+      "2025-01-12T14:32:01Z ERROR [payment-api] Database connection timeout after 30s",
+      "2025-01-12T14:32:03Z ERROR [payment-api] Retry attempt 1/3 failed - Connection refused",
+      "2025-01-12T14:32:06Z ERROR [payment-api] Retry attempt 2/3 failed - Connection refused",
+      "2025-01-12T14:32:09Z WARN [payment-api] Circuit breaker opened for database connections",
+      "2025-01-12T14:32:10Z ERROR [payment-api] All retries exhausted, returning 503 to clients"
+    ],
+    "metrics": {
+      "error_rate": 0.45,
+      "latency_p95_ms": 5200,
+      "requests_per_sec": 120,
+      "failed_requests": 54
+    },
+    "context": {
+      "host": "prod-api-3",
+      "region": "us-east-1",
+      "version": "v2.3.1",
+      "deployment": "blue-green"
+    }
+  },
+  {
+    "id": "INC-002",
+    "timestamp": "2025-01-12T15:10:00Z",
+    "service": "auth-service",
+    "severity": "LOW",
+    "status": "open",
+    "title": "Elevated Memory Usage",
+    "logs": [
+      "2025-01-12T15:10:01Z WARN [auth-service] Memory usage at 85% threshold",
+      "2025-01-12T15:10:05Z WARN [auth-service] GC pressure detected, frequent minor collections",
+      "2025-01-12T15:10:10Z INFO [auth-service] Memory usage stabilized at 87%",
+      "2025-01-12T15:10:15Z INFO [auth-service] No OOM errors detected"
+    ],
+    "metrics": {
+      "memory_usage_pct": 87,
+      "gc_time_ms": 450,
+      "heap_size_mb": 1024,
+      "gc_count_per_min": 12
+    },
+    "context": {
+      "host": "prod-auth-2",
+      "region": "us-west-2",
+      "version": "v1.8.3",
+      "deployment": "rolling"
+    }
+  },
+  {
+    "id": "INC-003",
+    "timestamp": "2025-01-12T16:45:00Z",
+    "service": "notification-worker",
+    "severity": "MEDIUM",
+    "status": "open",
+    "title": "Message Queue Backlog",
+    "logs": [
+      "2025-01-12T16:45:01Z WARN [notification-worker] Queue depth: 15000 messages",
+      "2025-01-12T16:45:10Z WARN [notification-worker] Consumer lag: 5 minutes behind producer",
+      "2025-01-12T16:45:20Z ERROR [notification-worker] Message processing timeout (30s exceeded)",
+      "2025-01-12T16:45:30Z INFO [notification-worker] Auto-scaling workers from 5 to 10",
+      "2025-01-12T16:45:45Z INFO [notification-worker] Queue depth decreasing: 12000 messages"
+    ],
+    "metrics": {
+      "queue_depth": 15000,
+      "consumer_lag_sec": 300,
+      "processing_rate_msg_sec": 50,
+      "timeout_count": 23
+    },
+    "context": {
+      "host": "worker-pool-1",
+      "region": "eu-west-1",
+      "version": "v3.1.0",
+      "deployment": "stateful-set"
+    }
+  },
+  {
+    "id": "INC-004",
+    "timestamp": "2025-01-12T17:22:00Z",
+    "service": "api-gateway",
+    "severity": "MEDIUM",
+    "status": "open",
+    "title": "Rate Limit Exceeded",
+    "logs": [
+      "2025-01-12T17:22:01Z WARN [api-gateway] Rate limit exceeded for client_id: web-app-prod",
+      "2025-01-12T17:22:05Z INFO [api-gateway] Returning 429 Too Many Requests",
+      "2025-01-12T17:22:10Z WARN [api-gateway] 500+ requests blocked in last minute",
+      "2025-01-12T17:22:30Z INFO [api-gateway] Traffic pattern suggests potential bot activity"
+    ],
+    "metrics": {
+      "requests_blocked": 523,
+      "rate_limit_threshold": 100,
+      "current_request_rate": 350,
+      "unique_ips": 5
+    },
+    "context": {
+      "host": "gateway-1",
+      "region": "us-east-1",
+      "version": "v4.2.0",
+      "deployment": "canary"
+    }
+  },
+  {
+    "id": "INC-005",
+    "timestamp": "2025-01-12T18:10:00Z",
+    "service": "cache-service",
+    "severity": "LOW",
+    "status": "resolved",
+    "title": "Cache Miss Rate Elevated",
+    "logs": [
+      "2025-01-12T18:10:01Z WARN [cache-service] Cache miss rate: 45% (threshold: 30%)",
+      "2025-01-12T18:10:10Z INFO [cache-service] Cache invalidation detected: product_catalog updated",
+      "2025-01-12T18:10:30Z INFO [cache-service] Cache warming initiated",
+      "2025-01-12T18:11:00Z INFO [cache-service] Cache miss rate normalized to 12%",
+      "2025-01-12T18:11:15Z INFO [cache-service] Incident auto-resolved"
+    ],
+    "metrics": {
+      "cache_miss_rate": 0.45,
+      "cache_hit_rate": 0.55,
+      "cache_size_mb": 512,
+      "eviction_count": 1203
+    },
+    "context": {
+      "host": "redis-cluster-1",
+      "region": "us-west-2",
+      "version": "v6.2.1",
+      "deployment": "cluster"
+    }
+  }
+]

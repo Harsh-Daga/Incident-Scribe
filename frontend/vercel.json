@@ -1,0 +1,15 @@
+{
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "@supabase_url",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase_anon_key",
+    "GEMINI_API_KEY": "@gemini_api_key",
+    "KESTRA_URL": "@kestra_url",
+    "KESTRA_USERNAME": "@kestra_username",
+    "KESTRA_PASSWORD": "@kestra_password"
+  }
+}

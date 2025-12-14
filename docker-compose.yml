@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  kestra:
+    image: kestra/kestra:latest
+    pull_policy: always
+    user: "root"
+    command: server standalone
+    volumes:
+      - kestra-data:/app/storage
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/kestra-wd:/tmp/kestra-wd
+      - ./kestra/flows:/app/flows
+    environment:
+      KESTRA_CONFIGURATION: |
+        micronaut:
+          security:
+            enabled: false
+        kestra:
+          server:
+            basic-auth:
+              username: "${KESTRA_USERNAME}"
+              password: "${KESTRA_PASSWORD}"
+          repository:
+            type: h2
+          storage:
+            type: local
+            local:
+              base-path: "/app/storage"
+          queue:
+            type: h2
+          tasks:
+            tmp-dir:
+              path: /tmp/kestra-wd/tmp
+        datasources:
+          h2:
+            url: jdbc:h2:mem:public;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+            username: kestra
+            password: ""
+            driver-class-name: org.h2.Driver
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+
+volumes:
+  kestra-data:
+    driver: local

@@ -1,0 +1,24 @@
+{
+  "name": "incident-cli",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "incident": "./index.js"
+  },
+  "scripts": {
+    "test": "node test-gemini.js"
+  },
+  "keywords": ["incident", "cli", "sre", "devops"],
+  "author": "",
+  "license": "ISC",
+  "description": "CLI tool for incident management and analysis",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.7.9",
+    "chalk": "^5.6.2",
+    "commander": "^13.1.0",
+    "dotenv": "^17.2.3",
+    "ora": "^8.2.0"
+  }
+}
