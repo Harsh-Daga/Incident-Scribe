@@ -1,8 +1,6 @@
 # CodeRabbit Configuration
 # AI-powered code review for IncidentScribe
 
-version: "1.0"
-
 # Review settings
 reviews:
   # Enable automatic reviews on PRs
@@ -87,6 +85,20 @@ reviews:
         - Error messages
         - Guardrails for destructive operations
         - User experience
+  
+  # Files to ignore
+  path_filters:
+    # Ignore generated files
+    - "!**/*.lock"
+    - "!**/node_modules/**"
+    - "!**/.next/**"
+    - "!**/dist/**"
+    
+    # Ignore config files (usually boilerplate)
+    - "!**/tsconfig.json"
+    - "!**/next.config.ts"
+    - "!**/postcss.config.mjs"
+    - "!**/eslint.config.mjs"
 
 # Chat settings
 chat:
@@ -107,20 +119,6 @@ tone_instructions: |
   This is a hackathon project, so be pragmatic about 
   suggestions vs blocking issues.
 
-# Files to ignore
-path_filters:
-  # Ignore generated files
-  - "!**/*.lock"
-  - "!**/node_modules/**"
-  - "!**/.next/**"
-  - "!**/dist/**"
-  
-  # Ignore config files (usually boilerplate)
-  - "!**/tsconfig.json"
-  - "!**/next.config.ts"
-  - "!**/postcss.config.mjs"
-  - "!**/eslint.config.mjs"
-
 # Early access features
 early_access: true
 
@@ -129,4 +127,3 @@ knowledge_base:
   opt_out: false
   learnings:
     scope: "auto"
-
