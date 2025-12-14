@@ -839,7 +839,7 @@ docker compose up -d
 
 ## 🏆 Hackathon
 
-Built for the **AI Agents Assemble Hackathon** by Kestra.
+Built for the **AI Agents Assemble Hackathon**.
 
 ### Technologies Used
 
